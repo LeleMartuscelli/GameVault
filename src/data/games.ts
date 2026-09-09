@@ -1,0 +1,31 @@
+import type { Game } from '../types/games'
+
+export const games: Game[] = [
+  {
+    id: 1,
+    title: 'Call of Duty: Warzone',
+    platform: '',
+    hoursPlayed: 2000,
+    timesCompleted: 0,
+    achievements: 0,
+    status: 'Jogando',
+  },
+  {
+    id: 2,
+    title: 'Counter-Strike 2',
+    platform: '',
+    hoursPlayed: 471,
+    timesCompleted: 0,
+    achievements: 0,
+    status: 'Jogando',
+  },
+  {
+    id: 3,
+    title: 'The Last of Us Part II',
+    platform: '',
+    hoursPlayed: 0,
+    timesCompleted: 3,
+    achievements: 0,
+    status: 'Zerado',
+  },
+]
