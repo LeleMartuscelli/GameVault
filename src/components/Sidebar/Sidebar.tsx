@@ -1,5 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { Gamepad2, LayoutDashboard, Library, PlusCircle } from 'lucide-react'
+import {
+  Gamepad2,
+  Heart,
+  LayoutDashboard,
+  Library,
+  PlusCircle,
+  Settings,
+} from 'lucide-react'
 
 function Sidebar() {
   return (
@@ -26,11 +33,28 @@ function Sidebar() {
           <span>Biblioteca</span>
         </NavLink>
 
+        <NavLink to="/favoritos">
+          <Heart size={20} />
+          <span>Favoritos</span>
+        </NavLink>
+
         <NavLink to="/adicionar">
           <PlusCircle size={20} />
           <span>Adicionar jogo</span>
         </NavLink>
       </nav>
+
+      <div className="sidebar-footer">
+        <button
+          type="button"
+          className="settings-button"
+          aria-label="Configurações"
+          title="Configurações"
+        >
+          <Settings size={21} />
+          <span>Configurações</span>
+        </button>
+      </div>
     </aside>
   )
 }

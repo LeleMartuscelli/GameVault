@@ -11,11 +11,7 @@ import {
   deleteGame,
   findGameById,
 } from '../../data/gameStorage'
-
-import warzoneImage from '../../assets/games/call-of-duty-warzone.jpg'
-import cs2Image from '../../assets/games/counter-strike-2.jpg'
-import tlouImage from '../../assets/games/the-last-of-us-part-ii.jpg'
-import arcRaidersImage from '../../assets/games/arc-raiders.jpg'
+import { getGameImage } from '../../data/gameImage'
 
 function GameDetails() {
   const navigate = useNavigate()
@@ -42,25 +38,6 @@ function GameDetails() {
     navigate('/biblioteca')
   }
 
-  const getGameImage = (title: string) => {
-    switch (title) {
-      case 'Call of Duty: Warzone':
-        return warzoneImage
-
-      case 'Counter-Strike 2':
-        return cs2Image
-
-      case 'The Last of Us Part II':
-        return tlouImage
-
-      case 'ARC Raiders':
-        return arcRaidersImage
-
-      default:
-        return null
-    }
-  }
-
   if (!game) {
     return (
       <main className="game-details-page">
@@ -78,7 +55,8 @@ function GameDetails() {
     )
   }
 
-  const gameImage = game.image || getGameImage(game.title)
+  const gameImage =
+    game.image || getGameImage(game.title)
 
   return (
     <main className="game-details-page">
@@ -154,22 +132,23 @@ function GameDetails() {
 
           <div className="detail-stat-content">
             <span>Conquistas</span>
-
             <strong>{game.achievements}</strong>
           </div>
         </article>
       </section>
 
       <section className="game-details-actions">
-       <button
-         type="button"
-         className="edit-game-button"
-         onClick={() => navigate(`/editar/${game.id}`)}
->
-      <Pencil size={18} />
-           Editar jogo
-         </button>
-         
+        <button
+          type="button"
+          className="edit-game-button"
+          onClick={() =>
+            navigate(`/editar/${game.id}`)
+          }
+        >
+          <Pencil size={18} />
+          Editar jogo
+        </button>
+
         <button
           type="button"
           className="delete-game-button"

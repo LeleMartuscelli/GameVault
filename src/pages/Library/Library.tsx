@@ -1,44 +1,20 @@
-import { Search, Clock3, Trophy } from 'lucide-react'
+import { Clock3, Search, Trophy } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAllGames } from '../../data/gameStorage'
-
-import warzoneImage from '../../assets/games/call-of-duty-warzone.jpg'
-import cs2Image from '../../assets/games/counter-strike-2.jpg'
-import tlouImage from '../../assets/games/the-last-of-us-part-ii.jpg'
-import arcRaidersImage from '../../assets/games/arc-raiders.jpg'
+import { getGameImage } from '../../data/gameImage'
 
 function Library() {
   const navigate = useNavigate()
+  const allGames = getAllGames()
 
   const [searchTerm, setSearchTerm] = useState('')
-
-  const allGames = getAllGames()
 
   const filteredGames = allGames.filter((game) =>
     game.title
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   )
-
-  const getGameImage = (title: string) => {
-    switch (title) {
-      case 'Call of Duty: Warzone':
-        return warzoneImage
-
-      case 'Counter-Strike 2':
-        return cs2Image
-
-      case 'The Last of Us Part II':
-        return tlouImage
-
-      case 'ARC Raiders':
-        return arcRaidersImage
-
-      default:
-        return null
-    }
-  }
 
   return (
     <main className="library-page">
@@ -49,27 +25,66 @@ function Library() {
         </div>
       </header>
 
-      <div className="library-search">
-        <Search size={18} />
+      {allGames.length > 0 && (
+        <div className="library-search">
+          <Search size={18} />
 
-        <input
-          type="text"
-          placeholder="Buscar jogo..."
-          value={searchTerm}
-          onChange={(event) =>
-            setSearchTerm(event.target.value)
-          }
-        />
-      </div>
+          <input
+            type="text"
+            placeholder="Buscar jogo..."
+            value={searchTerm}
+            onChange={(event) =>
+              setSearchTerm(event.target.value)
+            }
+          />
+        </div>
+      )}
 
-      {filteredGames.length > 0 ? (
+      {allGames.length === 0 ? (
+        <section className="library-empty">
+          <h2>Sua biblioteca está vazia</h2>
+
+          <p>
+            Adicione seu primeiro jogo para começar a montar
+            sua coleção.
+          </p>
+
+          <button
+            type="button"
+            className="game-card-button"
+            onClick={() => navigate('/adicionar')}
+          >
+            Adicionar jogo
+          </button>
+        </section>
+      ) : filteredGames.length === 0 ? (
+        <section className="library-empty">
+          <h2>Nenhum jogo encontrado</h2>
+
+          <p>
+            Não encontramos nenhum jogo com
+            "{searchTerm}".
+          </p>
+
+          <button
+            type="button"
+            className="game-card-button"
+            onClick={() => setSearchTerm('')}
+          >
+            Limpar busca
+          </button>
+        </section>
+      ) : (
         <section className="library-grid">
           {filteredGames.map((game) => {
             const gameImage =
               game.image || getGameImage(game.title)
 
             return (
-              <article className="game-card" key={game.id}>
+              <article
+                className="game-card"
+                key={game.id}
+              >
                 <div className="game-card-image">
                   {gameImage ? (
                     <img
@@ -99,7 +114,6 @@ function Library() {
                     {game.timesCompleted > 0 && (
                       <span>
                         <Trophy size={15} />
-
                         Zerado {game.timesCompleted}{' '}
                         {game.timesCompleted === 1
                           ? 'vez'
@@ -122,13 +136,6 @@ function Library() {
             )
           })}
         </section>
-      ) : (
-        <div className="library-empty">
-          <h2>Nenhum jogo encontrado</h2>
-          <p>
-            Tente buscar por outro nome.
-          </p>
-        </div>
       )}
     </main>
   )
