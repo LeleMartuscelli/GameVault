@@ -1,4 +1,5 @@
-import { Clock3, Trophy } from 'lucide-react'
+import { Search, Clock3, Trophy } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAllGames } from '../../data/gameStorage'
 
@@ -10,7 +11,15 @@ import arcRaidersImage from '../../assets/games/arc-raiders.jpg'
 function Library() {
   const navigate = useNavigate()
 
+  const [searchTerm, setSearchTerm] = useState('')
+
   const allGames = getAllGames()
+
+  const filteredGames = allGames.filter((game) =>
+    game.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  )
 
   const getGameImage = (title: string) => {
     switch (title) {
@@ -40,59 +49,87 @@ function Library() {
         </div>
       </header>
 
-      <section className="library-grid">
-        {allGames.map((game) => {
-          const gameImage = game.image || getGameImage(game.title)
+      <div className="library-search">
+        <Search size={18} />
 
-          return (
-            <article className="game-card" key={game.id}>
-              <div className="game-card-image">
-                {gameImage ? (
-                  <img
-                    src={gameImage}
-                    alt={game.title}
-                    className="game-card-cover"
-                  />
-                ) : (
-                  <div className="game-card-placeholder">
-                    {game.title}
-                  </div>
-                )}
-              </div>
+        <input
+          type="text"
+          placeholder="Buscar jogo..."
+          value={searchTerm}
+          onChange={(event) =>
+            setSearchTerm(event.target.value)
+          }
+        />
+      </div>
 
-              <div className="game-card-content">
-                <h2>{game.title}</h2>
+      {filteredGames.length > 0 ? (
+        <section className="library-grid">
+          {filteredGames.map((game) => {
+            const gameImage =
+              game.image || getGameImage(game.title)
 
-                <div className="game-card-info">
-                  <span>
-                    <Clock3 size={15} />
-                    {game.hoursPlayed.toLocaleString('pt-BR')}h jogadas
-                  </span>
-
-                  {game.timesCompleted > 0 && (
-                    <span>
-                      <Trophy size={15} />
-
-                      Zerado {game.timesCompleted}{' '}
-                      {game.timesCompleted === 1
-                        ? 'vez'
-                        : 'vezes'}
-                    </span>
+            return (
+              <article className="game-card" key={game.id}>
+                <div className="game-card-image">
+                  {gameImage ? (
+                    <img
+                      src={gameImage}
+                      alt={game.title}
+                      className="game-card-cover"
+                    />
+                  ) : (
+                    <div className="game-card-placeholder">
+                      {game.title}
+                    </div>
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  className="game-card-button"
-                  onClick={() => navigate(`/jogo/${game.id}`)}
-                >
-                  Ver detalhes
-                </button>
-              </div>
-            </article>
-          )
-        })}
-      </section>
+                <div className="game-card-content">
+                  <h2>{game.title}</h2>
+
+                  <div className="game-card-info">
+                    <span>
+                      <Clock3 size={15} />
+                      {game.hoursPlayed.toLocaleString(
+                        'pt-BR'
+                      )}
+                      h jogadas
+                    </span>
+
+                    {game.timesCompleted > 0 && (
+                      <span>
+                        <Trophy size={15} />
+
+                        Zerado {game.timesCompleted}{' '}
+                        {game.timesCompleted === 1
+                          ? 'vez'
+                          : 'vezes'}
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="game-card-button"
+                    onClick={() =>
+                      navigate(`/jogo/${game.id}`)
+                    }
+                  >
+                    Ver detalhes
+                  </button>
+                </div>
+              </article>
+            )
+          })}
+        </section>
+      ) : (
+        <div className="library-empty">
+          <h2>Nenhum jogo encontrado</h2>
+          <p>
+            Tente buscar por outro nome.
+          </p>
+        </div>
+      )}
     </main>
   )
 }

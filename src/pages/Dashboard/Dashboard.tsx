@@ -1,22 +1,37 @@
-import { ArrowRight, Clock3, Gamepad2, Medal, Trophy } from 'lucide-react'
-import { games } from '../../data/games'
+import {
+  ArrowRight,
+  Clock3,
+  Gamepad2,
+  Medal,
+  Trophy,
+} from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { getAllGames } from '../../data/gameStorage'
 import tlouBanner from '../../assets/games/the-last-of-us-part-ii.jpg'
 
 function Dashboard() {
-  const totalGames = games.length
+  const navigate = useNavigate()
 
-  const totalHours = games.reduce(
+  const allGames = getAllGames()
+
+  const totalGames = allGames.length
+
+  const totalHours = allGames.reduce(
     (total, game) => total + game.hoursPlayed,
     0
   )
 
-  const completedGames = games.filter(
+  const completedGames = allGames.filter(
     (game) => game.timesCompleted > 0
   ).length
 
-  const totalAchievements = games.reduce(
+  const totalAchievements = allGames.reduce(
     (total, game) => total + game.achievements,
     0
+  )
+
+  const featuredGame = allGames.find(
+    (game) => game.title === 'The Last of Us Part II'
   )
 
   return (
@@ -44,16 +59,31 @@ function Dashboard() {
         <div className="featured-game-overlay" />
 
         <div className="featured-game-content">
-          <span className="featured-label">EM DESTAQUE</span>
+          <span className="featured-label">
+            EM DESTAQUE
+          </span>
 
           <h2>The Last of Us Part II</h2>
 
-          <p>Zerado 3 vezes</p>
+          <p>
+            Zerado {featuredGame?.timesCompleted ?? 0}{' '}
+            {(featuredGame?.timesCompleted ?? 0) === 1
+              ? 'vez'
+              : 'vezes'}
+          </p>
 
-          <button type="button" className="featured-button">
-            Ver detalhes
-            <ArrowRight size={18} />
-          </button>
+          {featuredGame && (
+            <button
+              type="button"
+              className="featured-button"
+              onClick={() =>
+                navigate(`/jogo/${featuredGame.id}`)
+              }
+            >
+              Ver detalhes
+              <ArrowRight size={18} />
+            </button>
+          )}
         </div>
       </section>
 
@@ -81,7 +111,9 @@ function Dashboard() {
 
           <div>
             <span>Horas jogadas</span>
-            <strong>{totalHours.toLocaleString('pt-BR')}h</strong>
+            <strong>
+              {totalHours.toLocaleString('pt-BR')}h
+            </strong>
           </div>
         </article>
 

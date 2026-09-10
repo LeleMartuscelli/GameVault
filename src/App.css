@@ -963,6 +963,68 @@
   }
 }
 
+/* ========================================
+   LIBRARY SEARCH
+======================================== */
+
+.library-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 24px;
+  padding: 0 14px;
+  background-color: #161a23;
+  border: 1px solid #252a35;
+  border-radius: 10px;
+  color: #6b7280;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.library-search:focus-within {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+.library-search input {
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.library-search input::placeholder {
+  color: #6b7280;
+}
+
+.library-empty {
+  padding: 48px 24px;
+  background-color: #161a23;
+  border: 1px solid #252a35;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.library-empty h2 {
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.library-empty p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+
 /* =========================
    RESPONSIVIDADE
 ========================= */
@@ -989,36 +1051,174 @@
     padding: 20px 14px;
   }
 
+   .app-layout {
+    display: block;
+    min-height: 100vh;
+  }
+
   .main-content {
-    padding: 24px 18px;
+    width: 100%;
+    padding: 24px 18px 130px;
+  }
+
+  /* =========================
+     SIDEBAR MOBILE
+  ========================= */
+
+  .app-layout aside {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 1000;
+
+    width: 100%;
+    min-height: auto;
+
+    padding: 8px 10px;
+
+    background-color: rgba(16, 19, 26, 0.96);
+
+    border-right: none;
+    border-top: 1px solid #252a35;
+
+    backdrop-filter: blur(14px);
+  }
+
+  .sidebar-brand {
+    display: none;
+  }
+
+  .app-layout nav,
+  .sidebar-nav {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 6px;
+  }
+
+  .app-layout nav a,
+  .sidebar-nav a {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 4px;
+
+    padding: 8px 6px;
+
+    border-radius: 9px;
+
+    font-size: 0.72rem;
+    text-align: center;
+  }
+
+  .app-layout nav a svg,
+  .sidebar-nav a svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .sidebar-nav a span {
+    white-space: nowrap;
+  }
+
+  /* =========================
+     DASHBOARD
+  ========================= */
+
+  .dashboard-header h1,
+  .library-header h1,
+  .add-game-header h1 {
+    font-size: 1.7rem;
   }
 
   .stats-grid {
     grid-template-columns: 1fr;
   }
 
+  .featured-game {
+  height: 300px;
+}
+
+.featured-game-image {
+  object-position: 64% center;
+}
+
+.featured-game-background {
+  display: none;
+}
+
+.featured-game-overlay {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(11, 13, 18, 0.95) 0%,
+      rgba(11, 13, 18, 0.78) 42%,
+      rgba(11, 13, 18, 0.18) 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(11, 13, 18, 0.92) 0%,
+      transparent 65%
+    );
+}
+
+.featured-game-content {
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  max-width: 260px;
+}
+
+.featured-game-content h2 {
+  margin-bottom: 6px;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.featured-game-content p {
+  margin-bottom: 14px;
+  font-size: 0.85rem;
+}
+
+.featured-button {
+  padding: 10px 14px;
+  font-size: 0.82rem;
+}
+
+  /* =========================
+     BIBLIOTECA
+  ========================= */
+
   .library-grid {
     grid-template-columns: 1fr;
   }
 
-  .featured-game {
-    height: 270px;
+  .library-search {
+    max-width: 100%;
   }
 
-  .featured-game-content {
-    left: 24px;
-    bottom: 24px;
+  .game-card-image {
+    height: 210px;
   }
 
-  .featured-game-content h2 {
-    font-size: 1.35rem;
-  }
+  /* =========================
+     FORMULÁRIOS
+  ========================= */
 
   .form-row {
     grid-template-columns: 1fr;
   }
 
   .add-game-card {
+    max-width: 100%;
     padding: 20px;
   }
 

@@ -15,20 +15,28 @@ export function getStoredGames(): Game[] {
   const savedGames = localStorage.getItem(STORAGE_KEY)
 
   if (!savedGames) {
-    return []
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(games)
+    )
+
+    return games
   }
 
   try {
     return JSON.parse(savedGames)
   } catch {
-    return []
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(games)
+    )
+
+    return games
   }
 }
 
 export function getAllGames(): Game[] {
-  const storedGames = getStoredGames()
-
-  return [...games, ...storedGames]
+  return getStoredGames()
 }
 
 export function saveStoredGames(games: Game[]) {
@@ -50,7 +58,7 @@ export function addGame(game: Game) {
 }
 
 export function findGameById(id: string | number) {
-  const allGames = getAllGames()
+  const allGames = getStoredGames()
 
   return allGames.find(
     (game) => String(game.id) === String(id)
