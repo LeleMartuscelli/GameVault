@@ -23,7 +23,7 @@ export const games: Game[] = [
     id: 3,
     title: 'The Last of Us Part II',
     platform: '',
-    hoursPlayed: 0,
+    hoursPlayed: 84,
     timesCompleted: 3,
     achievements: 0,
     status: 'Zerado',
