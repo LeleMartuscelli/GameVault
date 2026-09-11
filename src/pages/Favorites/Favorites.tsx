@@ -1,100 +1,55 @@
-import {
-  Clock3,
-  Heart,
-  Search,
-  Trophy,
-} from 'lucide-react'
+import { Clock3, Heart, Trophy } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  getAllGames,
+  getFavoriteGames,
   toggleFavorite,
 } from '../../data/gameStorage'
 import { getGameImage } from '../../data/gameImage'
 
-function Library() {
+function Favorites() {
   const navigate = useNavigate()
 
-  const [games, setGames] = useState(() => getAllGames())
-  const [searchTerm, setSearchTerm] = useState('')
-
-  const filteredGames = games.filter((game) =>
-    game.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+  const [favoriteGames, setFavoriteGames] = useState(
+    () => getFavoriteGames()
   )
 
-  function handleToggleFavorite(
-    event: React.MouseEvent<HTMLButtonElement>,
-    gameId: number
-  ) {
-    event.stopPropagation()
-
+  function handleRemoveFavorite(gameId: number) {
     toggleFavorite(gameId)
-
-    setGames(getAllGames())
+    setFavoriteGames(getFavoriteGames())
   }
 
   return (
     <main className="library-page">
       <header className="library-header">
         <div>
-          <h1>Biblioteca</h1>
-          <p>Todos os jogos da sua coleção.</p>
+          <h1>Favoritos</h1>
+          <p>Seus jogos favoritos em um só lugar.</p>
         </div>
       </header>
 
-      {games.length > 0 && (
-        <div className="library-search">
-          <Search size={18} />
-
-          <input
-            type="text"
-            placeholder="Buscar jogo..."
-            value={searchTerm}
-            onChange={(event) =>
-              setSearchTerm(event.target.value)
-            }
-          />
-        </div>
-      )}
-
-      {games.length === 0 ? (
+      {favoriteGames.length === 0 ? (
         <section className="library-empty">
-          <h2>Sua biblioteca está vazia</h2>
+          <Heart size={42} />
+
+          <h2>Nenhum favorito ainda</h2>
 
           <p>
-            Adicione seu primeiro jogo para começar a montar
-            sua coleção.
+            Marque jogos com o coração na Biblioteca para
+            encontrá-los aqui.
           </p>
 
           <button
             type="button"
             className="game-card-button"
-            onClick={() => navigate('/adicionar')}
+            onClick={() => navigate('/biblioteca')}
           >
-            Adicionar jogo
-          </button>
-        </section>
-      ) : filteredGames.length === 0 ? (
-        <section className="library-empty">
-          <h2>Nenhum jogo encontrado</h2>
-
-          <p>
-            Não encontramos nenhum jogo com "{searchTerm}".
-          </p>
-
-          <button
-            type="button"
-            className="game-card-button"
-            onClick={() => setSearchTerm('')}
-          >
-            Limpar busca
+            Ir para a biblioteca
           </button>
         </section>
       ) : (
         <section className="library-grid">
-          {filteredGames.map((game) => {
+          {favoriteGames.map((game) => {
             const gameImage =
               game.image || getGameImage(game.title)
 
@@ -118,35 +73,16 @@ function Library() {
 
                   <button
                     type="button"
-                    className={
-                      game.favorite
-                        ? 'favorite-button active'
-                        : 'favorite-button'
-                    }
-                    aria-label={
-                      game.favorite
-                        ? 'Remover dos favoritos'
-                        : 'Adicionar aos favoritos'
-                    }
-                    title={
-                      game.favorite
-                        ? 'Remover dos favoritos'
-                        : 'Adicionar aos favoritos'
-                    }
-                    onClick={(event) =>
-                      handleToggleFavorite(
-                        event,
-                        game.id
-                      )
+                    className="favorite-button active"
+                    aria-label="Remover dos favoritos"
+                    title="Remover dos favoritos"
+                    onClick={() =>
+                      handleRemoveFavorite(game.id)
                     }
                   >
                     <Heart
                       size={20}
-                      fill={
-                        game.favorite
-                          ? 'currentColor'
-                          : 'none'
-                      }
+                      fill="currentColor"
                     />
                   </button>
                 </div>
@@ -157,7 +93,6 @@ function Library() {
                   <div className="game-card-info">
                     <span>
                       <Clock3 size={15} />
-
                       {game.hoursPlayed.toLocaleString(
                         'pt-BR'
                       )}
@@ -195,4 +130,4 @@ function Library() {
   )
 }
 
-export default Library
+export default Favorites

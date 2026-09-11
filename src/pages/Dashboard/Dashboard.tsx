@@ -8,14 +8,20 @@ import {
   Trophy,
   User,
 } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAllGames } from '../../data/gameStorage'
+import { getGameImage } from '../../data/gameImage'
 import dashboardBanner from '../../assets/games/call-of-duty-modern-III.jpg'
 
 function Dashboard() {
   const navigate = useNavigate()
 
   const allGames = getAllGames()
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [notificationsOpen, setNotificationsOpen] =
+    useState(false)
 
   const totalGames = allGames.length
 
@@ -33,6 +39,30 @@ function Dashboard() {
     0
   )
 
+  const recentGames = [...allGames]
+    .reverse()
+    .slice(0, 5)
+
+  const searchResults =
+    searchTerm.trim().length > 0
+      ? allGames.filter((game) =>
+          game.title
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        )
+      : []
+
+  function handleGameSearch(gameId: number) {
+    setSearchTerm('')
+    navigate(`/jogo/${gameId}`)
+  }
+
+  function handleNotifications() {
+    setNotificationsOpen(
+      (currentState) => !currentState
+    )
+  }
+
   return (
     <main className="dashboard">
       <header className="dashboard-header">
@@ -42,23 +72,142 @@ function Dashboard() {
         </div>
 
         <div className="dashboard-header-actions">
-          <div className="dashboard-search">
-            <Search size={18} />
+          <div className="dashboard-search-wrapper">
+            <div className="dashboard-search">
+              <Search size={18} />
 
-            <input
-              type="text"
-              placeholder="Buscar jogos..."
-            />
+              <input
+                type="text"
+                placeholder="Buscar jogos..."
+                value={searchTerm}
+                onChange={(event) =>
+                  setSearchTerm(event.target.value)
+                }
+              />
+            </div>
+
+            {searchTerm.trim().length > 0 && (
+              <div className="dashboard-search-results">
+                {searchResults.length > 0 ? (
+                  searchResults.map((game) => {
+                    const gameImage =
+                      game.image ||
+                      getGameImage(game.title)
+
+                    return (
+                      <button
+                        type="button"
+                        className="dashboard-search-result"
+                        key={game.id}
+                        onClick={() =>
+                          handleGameSearch(game.id)
+                        }
+                      >
+                        <div className="dashboard-search-result-image">
+                          {gameImage ? (
+                            <img
+                              src={gameImage}
+                              alt={game.title}
+                            />
+                          ) : (
+                            <Gamepad2 size={18} />
+                          )}
+                        </div>
+
+                        <div className="dashboard-search-result-info">
+                          <strong>{game.title}</strong>
+
+                          <span>
+                            {game.hoursPlayed.toLocaleString(
+                              'pt-BR'
+                            )}
+                            h jogadas
+                          </span>
+                        </div>
+                      </button>
+                    )
+                  })
+                ) : (
+                  <div className="dashboard-search-empty">
+                    Nenhum jogo encontrado.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          <button
-            type="button"
-            className="dashboard-icon-button"
-            aria-label="Notificações"
-            title="Notificações"
-          >
-            <Bell size={20} />
-          </button>
+          <div className="notifications-wrapper">
+            <button
+              type="button"
+              className="dashboard-icon-button"
+              aria-label="Notificações"
+              title="Notificações"
+              onClick={handleNotifications}
+            >
+              <Bell size={20} />
+            </button>
+
+            {notificationsOpen && (
+              <div className="notifications-panel">
+                <div className="notifications-header">
+                  <strong>Notificações</strong>
+                </div>
+
+                <div className="notification-item">
+                  <div className="notification-icon">
+                    <Gamepad2 size={18} />
+                  </div>
+
+                  <div>
+                    <strong>Biblioteca atualizada</strong>
+
+                    <p>
+                      Você possui {totalGames}{' '}
+                      {totalGames === 1
+                        ? 'jogo cadastrado.'
+                        : 'jogos cadastrados.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="notification-item">
+                  <div className="notification-icon">
+                    <Clock3 size={18} />
+                  </div>
+
+                  <div>
+                    <strong>Tempo de jogo</strong>
+
+                    <p>
+                      Você já registrou{' '}
+                      {totalHours.toLocaleString('pt-BR')}h
+                      de gameplay.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="notification-item">
+                  <div className="notification-icon">
+                    <Trophy size={18} />
+                  </div>
+
+                  <div>
+                    <strong>Progresso</strong>
+
+                    <p>
+                      {completedGames === 0
+                        ? 'Nenhum jogo zerado ainda.'
+                        : `${completedGames} ${
+                            completedGames === 1
+                              ? 'jogo zerado.'
+                              : 'jogos zerados.'
+                          }`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           <button
             type="button"
@@ -162,68 +311,68 @@ function Dashboard() {
         </article>
       </section>
 
-      <section className="recent-games">
-        <div className="recent-games-header">
-          <h2>Jogos recentes</h2>
+      {recentGames.length > 0 && (
+        <section className="recent-games">
+          <div className="recent-games-header">
+            <h2>Jogos recentes</h2>
 
-          <button
-            type="button"
-            onClick={() => navigate('/biblioteca')}
-          >
-            Ver todos
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => navigate('/biblioteca')}
+            >
+              Ver todos
+            </button>
+          </div>
 
-        <div className="recent-games-list">
-          <article className="recent-game-card">
-            <div className="recent-game-cover">
-              <img
-                src={dashboardBanner}
-                alt="Call of Duty: Modern Warfare III"
-              />
-            </div>
+          <div className="recent-games-list">
+            {recentGames.map((game) => {
+              const gameImage =
+                game.image ||
+                getGameImage(game.title)
 
-            <h3>Call of Duty: Modern Warfare III</h3>
-            <span>Em andamento</span>
-          </article>
+              const isCompleted =
+                game.timesCompleted > 0
 
-          <article className="recent-game-card">
-            <div className="recent-game-cover recent-game-placeholder">
-              Warzone
-            </div>
+              return (
+                <article
+                  className="recent-game-card"
+                  key={game.id}
+                  onClick={() =>
+                    navigate(`/jogo/${game.id}`)
+                  }
+                >
+                  <div className="recent-game-cover">
+                    {gameImage ? (
+                      <img
+                        src={gameImage}
+                        alt={game.title}
+                      />
+                    ) : (
+                      <div className="recent-game-placeholder">
+                        {game.title}
+                      </div>
+                    )}
+                  </div>
 
-            <h3>Call of Duty: Warzone</h3>
-            <span>Em andamento</span>
-          </article>
+                  <h3>{game.title}</h3>
 
-          <article className="recent-game-card">
-            <div className="recent-game-cover recent-game-placeholder">
-              CS2
-            </div>
-
-            <h3>Counter-Strike 2</h3>
-            <span>Em andamento</span>
-          </article>
-
-          <article className="recent-game-card">
-            <div className="recent-game-cover recent-game-placeholder">
-              TLOU II
-            </div>
-
-            <h3>The Last of Us Part II</h3>
-            <span>Zerado</span>
-          </article>
-
-          <article className="recent-game-card">
-            <div className="recent-game-cover recent-game-placeholder">
-              ARC
-            </div>
-
-            <h3>ARC Raiders</h3>
-            <span>Planejado</span>
-          </article>
-        </div>
-      </section>
+                  <span
+                    className={
+                      isCompleted
+                        ? 'recent-game-status completed'
+                        : 'recent-game-status playing'
+                    }
+                  >
+                    {isCompleted
+                      ? 'Zerado'
+                      : 'Em andamento'}
+                  </span>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+      )}
     </main>
   )
 }

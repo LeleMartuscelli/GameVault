@@ -13,4 +13,5 @@ export interface Game {
   timesCompleted: number
   achievements: number
   status: GameStatus
+  favorite: boolean
 }
