@@ -9,6 +9,7 @@ export const games: Game[] = [
     timesCompleted: 0,
     achievements: 0,
     status: 'Jogando',
+    favorite: false,
   },
   {
     id: 2,
@@ -18,6 +19,7 @@ export const games: Game[] = [
     timesCompleted: 0,
     achievements: 0,
     status: 'Jogando',
+    favorite: false,
   },
   {
     id: 3,
@@ -27,5 +29,6 @@ export const games: Game[] = [
     timesCompleted: 3,
     achievements: 0,
     status: 'Zerado',
+    favorite: false,
   },
 ]
