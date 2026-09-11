@@ -6,6 +6,12 @@ O projeto permite cadastrar jogos, acompanhar horas jogadas, visualizar estatís
 
 Esta é a primeira versão do projeto, desenvolvida com foco no front-end e persistência de dados local.
 
+## 🌐 Projeto online
+
+Acesse a versão publicada do GameVault:
+
+https://game-vault-three-ebon.vercel.app/
+
 ## 📸 Preview
 
 ### Dashboard
@@ -83,7 +89,7 @@ Antes de começar, é necessário ter o Node.js e o npm instalados.
 Clone o repositório:
 
 ```bash
-git clone URL_DO_REPOSITORIO
+git clone https://github.com/LeleMartuscelli/GameVault.git
 ```
 
 Entre na pasta do projeto:
