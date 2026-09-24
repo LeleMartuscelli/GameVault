@@ -8,20 +8,39 @@ import {
   Trophy,
   User,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getAllGames } from '../../data/gameStorage'
 import { getGameImage } from '../../data/gameImage'
+import { getGames } from '../../services/gameApi'
+import type { Game } from '../../types/games'
 import dashboardBanner from '../../assets/games/call-of-duty-modern-III.jpg'
 
 function Dashboard() {
   const navigate = useNavigate()
 
-  const allGames = getAllGames()
-
+  const [allGames, setAllGames] = useState<Game[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [notificationsOpen, setNotificationsOpen] =
     useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadGames() {
+      try {
+        const apiGames = await getGames()
+        setAllGames(apiGames)
+      } catch (error) {
+        console.error(
+          'Erro ao carregar jogos do Dashboard:',
+          error
+        )
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadGames()
+  }, [])
 
   const totalGames = allGames.length
 
@@ -63,12 +82,27 @@ function Dashboard() {
     )
   }
 
+  if (loading) {
+    return (
+      <main className="dashboard">
+        <header className="dashboard-header">
+          <div className="dashboard-header-text">
+            <h1>Dashboard</h1>
+            <p>Carregando sua biblioteca...</p>
+          </div>
+        </header>
+      </main>
+    )
+  }
+
   return (
     <main className="dashboard">
       <header className="dashboard-header">
         <div className="dashboard-header-text">
           <h1>Dashboard</h1>
-          <p>Visão geral da sua biblioteca de jogos.</p>
+          <p>
+            Visão geral da sua biblioteca de jogos.
+          </p>
         </div>
 
         <div className="dashboard-header-actions">
@@ -91,7 +125,6 @@ function Dashboard() {
                 {searchResults.length > 0 ? (
                   searchResults.map((game) => {
                     const gameImage =
-                      game.image ||
                       getGameImage(game.title)
 
                     return (
@@ -115,7 +148,9 @@ function Dashboard() {
                         </div>
 
                         <div className="dashboard-search-result-info">
-                          <strong>{game.title}</strong>
+                          <strong>
+                            {game.title}
+                          </strong>
 
                           <span>
                             {game.hoursPlayed.toLocaleString(
@@ -159,7 +194,9 @@ function Dashboard() {
                   </div>
 
                   <div>
-                    <strong>Biblioteca atualizada</strong>
+                    <strong>
+                      Biblioteca atualizada
+                    </strong>
 
                     <p>
                       Você possui {totalGames}{' '}
@@ -180,8 +217,10 @@ function Dashboard() {
 
                     <p>
                       Você já registrou{' '}
-                      {totalHours.toLocaleString('pt-BR')}h
-                      de gameplay.
+                      {totalHours.toLocaleString(
+                        'pt-BR'
+                      )}
+                      h de gameplay.
                     </p>
                   </div>
                 </div>
@@ -254,7 +293,9 @@ function Dashboard() {
             <button
               type="button"
               className="featured-button featured-button-secondary"
-              onClick={() => navigate('/biblioteca')}
+              onClick={() =>
+                navigate('/biblioteca')
+              }
             >
               Ver biblioteca
             </button>
@@ -318,7 +359,9 @@ function Dashboard() {
 
             <button
               type="button"
-              onClick={() => navigate('/biblioteca')}
+              onClick={() =>
+                navigate('/biblioteca')
+              }
             >
               Ver todos
             </button>
@@ -327,7 +370,6 @@ function Dashboard() {
           <div className="recent-games-list">
             {recentGames.map((game) => {
               const gameImage =
-                game.image ||
                 getGameImage(game.title)
 
               const isCompleted =

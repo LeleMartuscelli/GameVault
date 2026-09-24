@@ -6,22 +6,46 @@ import {
   Trash2,
   Trophy,
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { getGameImage } from '../../data/gameImage'
 import {
   deleteGame,
-  findGameById,
-} from '../../data/gameStorage'
-import { getGameImage } from '../../data/gameImage'
+  getGameById,
+} from '../../services/gameApi'
+import type { Game } from '../../types/games'
 
 function GameDetails() {
   const navigate = useNavigate()
   const { id } = useParams()
 
-  const game = id
-    ? findGameById(id)
-    : undefined
+  const [game, setGame] = useState<Game | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
 
-  function handleDelete() {
+  useEffect(() => {
+    async function loadGame() {
+      if (!id) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
+
+      try {
+        const apiGame = await getGameById(Number(id))
+        setGame(apiGame)
+      } catch (error) {
+        console.error('Erro ao carregar jogo:', error)
+        setNotFound(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadGame()
+  }, [id])
+
+  async function handleDelete() {
     if (!game) {
       return
     }
@@ -34,11 +58,26 @@ function GameDetails() {
       return
     }
 
-    deleteGame(game.id)
-    navigate('/biblioteca')
+    try {
+      await deleteGame(game.id)
+
+      navigate('/biblioteca')
+    } catch (error) {
+      console.error('Erro ao excluir jogo:', error)
+
+      alert('Não foi possível excluir o jogo.')
+    }
   }
 
-  if (!game) {
+  if (loading) {
+    return (
+      <main className="game-details-page">
+        <h1>Carregando jogo...</h1>
+      </main>
+    )
+  }
+
+  if (notFound || !game) {
     return (
       <main className="game-details-page">
         <h1>Jogo não encontrado</h1>
@@ -55,8 +94,7 @@ function GameDetails() {
     )
   }
 
-  const gameImage =
-    game.image || getGameImage(game.title)
+  const gameImage = getGameImage(game.title)
 
   return (
     <main className="game-details-page">

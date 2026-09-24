@@ -4,19 +4,36 @@ import {
   Search,
   Trophy,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  getAllGames,
-  toggleFavorite,
-} from '../../data/gameStorage'
 import { getGameImage } from '../../data/gameImage'
+import {
+  getGames,
+  updateGame,
+} from '../../services/gameApi'
+import type { Game } from '../../types/games'
 
 function Library() {
   const navigate = useNavigate()
 
-  const [games, setGames] = useState(() => getAllGames())
+  const [games, setGames] = useState<Game[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+
+  useEffect(() => {
+    async function loadGames() {
+      try {
+        const apiGames = await getGames()
+        setGames(apiGames)
+      } catch (error) {
+        console.error(
+          'Erro ao carregar jogos:',
+          error
+        )
+      }
+    }
+
+    loadGames()
+  }, [])
 
   const filteredGames = games.filter((game) =>
     game.title
@@ -24,15 +41,43 @@ function Library() {
       .includes(searchTerm.toLowerCase())
   )
 
-  function handleToggleFavorite(
+  async function handleToggleFavorite(
     event: React.MouseEvent<HTMLButtonElement>,
-    gameId: number
+    game: Game
   ) {
     event.stopPropagation()
 
-    toggleFavorite(gameId)
+    try {
+      const updatedGame = await updateGame(
+        game.id,
+        {
+          title: game.title,
+          platform: game.platform,
+          hoursPlayed: game.hoursPlayed,
+          timesCompleted: game.timesCompleted,
+          achievements: game.achievements,
+          status: game.status,
+          favorite: !game.favorite,
+        }
+      )
 
-    setGames(getAllGames())
+      setGames((currentGames) =>
+        currentGames.map((currentGame) =>
+          currentGame.id === updatedGame.id
+            ? updatedGame
+            : currentGame
+        )
+      )
+    } catch (error) {
+      console.error(
+        'Erro ao atualizar favorito:',
+        error
+      )
+
+      alert(
+        'Não foi possível atualizar o favorito.'
+      )
+    }
   }
 
   return (
@@ -64,14 +109,16 @@ function Library() {
           <h2>Sua biblioteca está vazia</h2>
 
           <p>
-            Adicione seu primeiro jogo para começar a montar
-            sua coleção.
+            Adicione seu primeiro jogo para começar
+            a montar sua coleção.
           </p>
 
           <button
             type="button"
             className="game-card-button"
-            onClick={() => navigate('/adicionar')}
+            onClick={() =>
+              navigate('/adicionar')
+            }
           >
             Adicionar jogo
           </button>
@@ -81,13 +128,16 @@ function Library() {
           <h2>Nenhum jogo encontrado</h2>
 
           <p>
-            Não encontramos nenhum jogo com "{searchTerm}".
+            Não encontramos nenhum jogo com "
+            {searchTerm}".
           </p>
 
           <button
             type="button"
             className="game-card-button"
-            onClick={() => setSearchTerm('')}
+            onClick={() =>
+              setSearchTerm('')
+            }
           >
             Limpar busca
           </button>
@@ -96,7 +146,7 @@ function Library() {
         <section className="library-grid">
           {filteredGames.map((game) => {
             const gameImage =
-              game.image || getGameImage(game.title)
+              getGameImage(game.title)
 
             return (
               <article
@@ -136,7 +186,7 @@ function Library() {
                     onClick={(event) =>
                       handleToggleFavorite(
                         event,
-                        game.id
+                        game
                       )
                     }
                   >
@@ -168,7 +218,8 @@ function Library() {
                       <span>
                         <Trophy size={15} />
 
-                        Zerado {game.timesCompleted}{' '}
+                        Zerado{' '}
+                        {game.timesCompleted}{' '}
                         {game.timesCompleted === 1
                           ? 'vez'
                           : 'vezes'}
@@ -180,7 +231,9 @@ function Library() {
                     type="button"
                     className="game-card-button"
                     onClick={() =>
-                      navigate(`/jogo/${game.id}`)
+                      navigate(
+                        `/jogo/${game.id}`
+                      )
                     }
                   >
                     Ver detalhes

@@ -1,17 +1,21 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { addGame } from '../../data/gameStorage'
+import { createGame } from '../../services/gameApi'
+import type { GameStatus } from '../../types/games'
 
 function AddGame() {
   const navigate = useNavigate()
 
   const [title, setTitle] = useState('')
+  const [platform, setPlatform] = useState('PC')
+  const [status, setStatus] = useState<GameStatus>('Quero jogar')
   const [hoursPlayed, setHoursPlayed] = useState('')
   const [timesCompleted, setTimesCompleted] = useState('')
   const [achievements, setAchievements] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (!title.trim()) {
@@ -19,22 +23,26 @@ function AddGame() {
       return
     }
 
-    const newGame = {
-      id: Date.now(),
-      title: title.trim(),
-      hoursPlayed: Number(hoursPlayed) || 0,
-      timesCompleted: Number(timesCompleted) || 0,
-      achievements: Number(achievements) || 0,
+    try {
+      setIsSubmitting(true)
+
+      await createGame({
+        title: title.trim(),
+        platform,
+        hoursPlayed: Number(hoursPlayed) || 0,
+        timesCompleted: Number(timesCompleted) || 0,
+        achievements: Number(achievements) || 0,
+        status,
+        favorite: false,
+      })
+
+      navigate('/biblioteca')
+    } catch (error) {
+      console.error('Erro ao cadastrar jogo:', error)
+      alert('Não foi possível cadastrar o jogo.')
+    } finally {
+      setIsSubmitting(false)
     }
-
-    addGame(newGame)
-
-    setTitle('')
-    setHoursPlayed('')
-    setTimesCompleted('')
-    setAchievements('')
-
-    navigate('/biblioteca')
   }
 
   return (
@@ -58,6 +66,42 @@ function AddGame() {
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Ex: Red Dead Redemption 2"
             />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="platform">Plataforma</label>
+
+              <select
+                id="platform"
+                value={platform}
+                onChange={(event) => setPlatform(event.target.value)}
+              >
+                <option value="PC">PC</option>
+                <option value="PlayStation">PlayStation</option>
+                <option value="Xbox">Xbox</option>
+                <option value="Nintendo">Nintendo</option>
+                <option value="Outra">Outra</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="status">Status</label>
+
+              <select
+                id="status"
+                value={status}
+                onChange={(event) =>
+                  setStatus(event.target.value as GameStatus)
+                }
+              >
+                <option value="Jogando">Jogando</option>
+                <option value="Zerado">Zerado</option>
+                <option value="Quero jogar">Quero jogar</option>
+                <option value="Pausado">Pausado</option>
+                <option value="Abandonado">Abandonado</option>
+              </select>
+            </div>
           </div>
 
           <div className="form-row">
@@ -116,8 +160,11 @@ function AddGame() {
           <button
             type="submit"
             className="add-game-button"
+            disabled={isSubmitting}
           >
-            Adicionar à biblioteca
+            {isSubmitting
+              ? 'Adicionando...'
+              : 'Adicionar à biblioteca'}
           </button>
         </form>
       </section>

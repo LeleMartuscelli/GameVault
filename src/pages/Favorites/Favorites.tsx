@@ -1,22 +1,86 @@
 import { Clock3, Heart, Trophy } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  getFavoriteGames,
-  toggleFavorite,
-} from '../../data/gameStorage'
 import { getGameImage } from '../../data/gameImage'
+import {
+  getGames,
+  updateGame,
+} from '../../services/gameApi'
+import type { Game } from '../../types/games'
 
 function Favorites() {
   const navigate = useNavigate()
 
-  const [favoriteGames, setFavoriteGames] = useState(
-    () => getFavoriteGames()
-  )
+  const [favoriteGames, setFavoriteGames] =
+    useState<Game[]>([])
+  const [loading, setLoading] = useState(true)
 
-  function handleRemoveFavorite(gameId: number) {
-    toggleFavorite(gameId)
-    setFavoriteGames(getFavoriteGames())
+  useEffect(() => {
+    async function loadFavoriteGames() {
+      try {
+        const games = await getGames()
+
+        const favorites = games.filter(
+          (game) => game.favorite
+        )
+
+        setFavoriteGames(favorites)
+      } catch (error) {
+        console.error(
+          'Erro ao carregar favoritos:',
+          error
+        )
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadFavoriteGames()
+  }, [])
+
+  async function handleRemoveFavorite(
+    game: Game
+  ) {
+    try {
+      await updateGame(game.id, {
+        title: game.title,
+        platform: game.platform,
+        hoursPlayed: game.hoursPlayed,
+        timesCompleted: game.timesCompleted,
+        achievements: game.achievements,
+        status: game.status,
+        favorite: false,
+      })
+
+      setFavoriteGames((currentGames) =>
+        currentGames.filter(
+          (currentGame) =>
+            currentGame.id !== game.id
+        )
+      )
+    } catch (error) {
+      console.error(
+        'Erro ao remover favorito:',
+        error
+      )
+
+      alert(
+        'Não foi possível remover o jogo dos favoritos.'
+      )
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="library-page">
+        <header className="library-header">
+          <div>
+            <h1>Favoritos</h1>
+            <p>Carregando seus jogos favoritos...</p>
+          </div>
+        </header>
+      </main>
+    )
   }
 
   return (
@@ -24,7 +88,9 @@ function Favorites() {
       <header className="library-header">
         <div>
           <h1>Favoritos</h1>
-          <p>Seus jogos favoritos em um só lugar.</p>
+          <p>
+            Seus jogos favoritos em um só lugar.
+          </p>
         </div>
       </header>
 
@@ -35,14 +101,16 @@ function Favorites() {
           <h2>Nenhum favorito ainda</h2>
 
           <p>
-            Marque jogos com o coração na Biblioteca para
-            encontrá-los aqui.
+            Marque jogos com o coração na Biblioteca
+            para encontrá-los aqui.
           </p>
 
           <button
             type="button"
             className="game-card-button"
-            onClick={() => navigate('/biblioteca')}
+            onClick={() =>
+              navigate('/biblioteca')
+            }
           >
             Ir para a biblioteca
           </button>
@@ -51,7 +119,7 @@ function Favorites() {
         <section className="library-grid">
           {favoriteGames.map((game) => {
             const gameImage =
-              game.image || getGameImage(game.title)
+              getGameImage(game.title)
 
             return (
               <article
@@ -77,7 +145,7 @@ function Favorites() {
                     aria-label="Remover dos favoritos"
                     title="Remover dos favoritos"
                     onClick={() =>
-                      handleRemoveFavorite(game.id)
+                      handleRemoveFavorite(game)
                     }
                   >
                     <Heart
@@ -93,6 +161,7 @@ function Favorites() {
                   <div className="game-card-info">
                     <span>
                       <Clock3 size={15} />
+
                       {game.hoursPlayed.toLocaleString(
                         'pt-BR'
                       )}
@@ -103,7 +172,8 @@ function Favorites() {
                       <span>
                         <Trophy size={15} />
 
-                        Zerado {game.timesCompleted}{' '}
+                        Zerado{' '}
+                        {game.timesCompleted}{' '}
                         {game.timesCompleted === 1
                           ? 'vez'
                           : 'vezes'}
@@ -115,7 +185,9 @@ function Favorites() {
                     type="button"
                     className="game-card-button"
                     onClick={() =>
-                      navigate(`/jogo/${game.id}`)
+                      navigate(
+                        `/jogo/${game.id}`
+                      )
                     }
                   >
                     Ver detalhes
