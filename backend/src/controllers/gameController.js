@@ -1,5 +1,13 @@
 const games = require('../data/games')
 
+const validStatuses = [
+  'Jogando',
+  'Zerado',
+  'Quero jogar',
+  'Pausado',
+  'Abandonado'
+]
+
 const getGames = (req, res) => {
   res.json(games)
 }
@@ -35,6 +43,12 @@ const createGame = (req, res) => {
     })
   }
 
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({
+      message: 'Status inválido'
+    })
+  }
+
   if (
     hoursPlayed < 0 ||
     timesCompleted < 0 ||
@@ -45,8 +59,13 @@ const createGame = (req, res) => {
     })
   }
 
+  const nextId =
+    games.length > 0
+      ? Math.max(...games.map((game) => game.id)) + 1
+      : 1
+
   const newGame = {
-    id: games.length + 1,
+    id: nextId,
     title,
     platform,
     hoursPlayed: hoursPlayed ?? 0,
@@ -81,6 +100,12 @@ const updateGame = (req, res) => {
     status,
     favorite
   } = req.body
+
+  if (status !== undefined && !validStatuses.includes(status)) {
+    return res.status(400).json({
+      message: 'Status inválido'
+    })
+  }
 
   if (
     hoursPlayed < 0 ||
