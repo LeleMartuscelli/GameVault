@@ -1,4 +1,5 @@
-const games = require('../data/games')
+
+const pool = require('../config/database')
 
 const validStatuses = [
   'Jogando',
@@ -8,36 +9,89 @@ const validStatuses = [
   'Abandonado'
 ]
 
-const getGames = (req, res) => {
-  res.json(games)
+// Campos retornados pela API
+const gameFields = `
+  id,
+  title,
+  platform,
+  hours_played AS "hoursPlayed",
+  times_completed AS "timesCompleted",
+  achievements,
+  status,
+  favorite
+`
+
+// GET - Listar todos os jogos
+const getGames = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT ${gameFields}
+      FROM games
+      ORDER BY id
+    `)
+
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Erro ao listar jogos:', error.message)
+
+    res.status(500).json({
+      message: 'Erro interno ao buscar jogos'
+    })
+  }
 }
 
-const getGameById = (req, res) => {
+// GET - Buscar jogo por ID
+const getGameById = async (req, res) => {
   const id = Number(req.params.id)
 
-  const game = games.find((game) => game.id === id)
-
-  if (!game) {
-    return res.status(404).json({
-      message: 'Jogo não encontrado'
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({
+      message: 'ID inválido'
     })
   }
 
-  res.json(game)
+  try {
+    const result = await pool.query(`
+      SELECT ${gameFields}
+      FROM games
+      WHERE id = $1
+    `, [id])
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: 'Jogo não encontrado'
+      })
+    }
+
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Erro ao buscar jogo:', error.message)
+
+    res.status(500).json({
+      message: 'Erro interno ao buscar jogo'
+    })
+  }
 }
 
-const createGame = (req, res) => {
+// POST - Cadastrar novo jogo
+const createGame = async (req, res) => {
   const {
     title,
     platform,
-    hoursPlayed,
-    timesCompleted,
-    achievements,
+    hoursPlayed = 0,
+    timesCompleted = 0,
+    achievements = 0,
     status,
-    favorite
+    favorite = false
   } = req.body
 
-  if (!title || !platform || !status) {
+  if (
+    typeof title !== 'string' ||
+    !title.trim() ||
+    typeof platform !== 'string' ||
+    !platform.trim() ||
+    !status
+  ) {
     return res.status(400).json({
       message: 'Título, plataforma e status são obrigatórios'
     })
@@ -49,45 +103,66 @@ const createGame = (req, res) => {
     })
   }
 
-  if (
-    hoursPlayed < 0 ||
-    timesCompleted < 0 ||
-    achievements < 0
-  ) {
+  const numbers = [
+    hoursPlayed,
+    timesCompleted,
+    achievements
+  ]
+
+  if (numbers.some(value =>
+    !Number.isSafeInteger(value) || value < 0
+  )) {
     return res.status(400).json({
-      message: 'Os valores numéricos não podem ser negativos'
+      message: 'Os valores numéricos devem ser inteiros não negativos'
     })
   }
 
-  const nextId =
-    games.length > 0
-      ? Math.max(...games.map((game) => game.id)) + 1
-      : 1
-
-  const newGame = {
-    id: nextId,
-    title,
-    platform,
-    hoursPlayed: hoursPlayed ?? 0,
-    timesCompleted: timesCompleted ?? 0,
-    achievements: achievements ?? 0,
-    status,
-    favorite: favorite ?? false
+  if (typeof favorite !== 'boolean') {
+    return res.status(400).json({
+      message: 'Favorito deve ser verdadeiro ou falso'
+    })
   }
 
-  games.push(newGame)
+  try {
+    const result = await pool.query(`
+      INSERT INTO games (
+        title,
+        platform,
+        hours_played,
+        times_completed,
+        achievements,
+        status,
+        favorite
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING ${gameFields}
+    `, [
+      title.trim(),
+      platform.trim(),
+      hoursPlayed,
+      timesCompleted,
+      achievements,
+      status,
+      favorite
+    ])
 
-  res.status(201).json(newGame)
+    res.status(201).json(result.rows[0])
+  } catch (error) {
+    console.error('Erro ao cadastrar jogo:', error.message)
+
+    res.status(500).json({
+      message: 'Erro interno ao cadastrar jogo'
+    })
+  }
 }
 
-const updateGame = (req, res) => {
+// PUT - Atualizar jogo
+const updateGame = async (req, res) => {
   const id = Number(req.params.id)
 
-  const game = games.find((game) => game.id === id)
-
-  if (!game) {
-    return res.status(404).json({
-      message: 'Jogo não encontrado'
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({
+      message: 'ID inválido'
     })
   }
 
@@ -101,50 +176,124 @@ const updateGame = (req, res) => {
     favorite
   } = req.body
 
-  if (status !== undefined && !validStatuses.includes(status)) {
+  if (
+    (title !== undefined &&
+      (typeof title !== 'string' || !title.trim())) ||
+    (platform !== undefined &&
+      (typeof platform !== 'string' || !platform.trim()))
+  ) {
+    return res.status(400).json({
+      message: 'Título e plataforma devem ser textos não vazios'
+    })
+  }
+
+  if (
+    status !== undefined &&
+    !validStatuses.includes(status)
+  ) {
     return res.status(400).json({
       message: 'Status inválido'
     })
   }
 
+  const numbers = [
+    hoursPlayed,
+    timesCompleted,
+    achievements
+  ]
+
+  if (numbers.some(value =>
+    value !== undefined &&
+    (!Number.isSafeInteger(value) || value < 0)
+  )) {
+    return res.status(400).json({
+      message: 'Os valores numéricos devem ser inteiros não negativos'
+    })
+  }
+
   if (
-    hoursPlayed < 0 ||
-    timesCompleted < 0 ||
-    achievements < 0
+    favorite !== undefined &&
+    typeof favorite !== 'boolean'
   ) {
     return res.status(400).json({
-      message: 'Os valores numéricos não podem ser negativos'
+      message: 'Favorito deve ser verdadeiro ou falso'
     })
   }
 
-  game.title = title ?? game.title
-  game.platform = platform ?? game.platform
-  game.hoursPlayed = hoursPlayed ?? game.hoursPlayed
-  game.timesCompleted = timesCompleted ?? game.timesCompleted
-  game.achievements = achievements ?? game.achievements
-  game.status = status ?? game.status
-  game.favorite = favorite ?? game.favorite
+  try {
+    const result = await pool.query(`
+      UPDATE games
+      SET
+        title = COALESCE($1, title),
+        platform = COALESCE($2, platform),
+        hours_played = COALESCE($3, hours_played),
+        times_completed = COALESCE($4, times_completed),
+        achievements = COALESCE($5, achievements),
+        status = COALESCE($6, status),
+        favorite = COALESCE($7, favorite)
+      WHERE id = $8
+      RETURNING ${gameFields}
+    `, [
+      title?.trim() ?? null,
+      platform?.trim() ?? null,
+      hoursPlayed ?? null,
+      timesCompleted ?? null,
+      achievements ?? null,
+      status ?? null,
+      favorite ?? null,
+      id
+    ])
 
-  res.json(game)
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: 'Jogo não encontrado'
+      })
+    }
+
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Erro ao atualizar jogo:', error.message)
+
+    res.status(500).json({
+      message: 'Erro interno ao atualizar jogo'
+    })
+  }
 }
 
-const deleteGame = (req, res) => {
+// DELETE - Excluir jogo
+const deleteGame = async (req, res) => {
   const id = Number(req.params.id)
 
-  const gameIndex = games.findIndex((game) => game.id === id)
-
-  if (gameIndex === -1) {
-    return res.status(404).json({
-      message: 'Jogo não encontrado'
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({
+      message: 'ID inválido'
     })
   }
 
-  const deletedGame = games.splice(gameIndex, 1)
+  try {
+    const result = await pool.query(`
+      DELETE FROM games
+      WHERE id = $1
+      RETURNING ${gameFields}
+    `, [id])
 
-  res.json({
-    message: 'Jogo excluído com sucesso',
-    game: deletedGame[0]
-  })
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: 'Jogo não encontrado'
+      })
+    }
+
+    res.json({
+      message: 'Jogo excluído com sucesso',
+      game: result.rows[0]
+    })
+  } catch (error) {
+    console.error('Erro ao excluir jogo:', error.message)
+
+    res.status(500).json({
+      message: 'Erro interno ao excluir jogo'
+    })
+  }
 }
 
 module.exports = {
