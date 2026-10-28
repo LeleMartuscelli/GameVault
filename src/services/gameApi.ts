@@ -2,8 +2,7 @@ import type { Game, GameStatus } from '../types/games'
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  'http://localhost:3000/api/games'
-
+  'https://gamevault-vuz1.onrender.com/api/games'
 export interface CreateGameData {
   title: string
   platform: string

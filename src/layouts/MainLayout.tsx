@@ -1,12 +1,13 @@
+
 import { Outlet } from 'react-router-dom'
-import Sidebar from '../components/Sidebar/Sidebar'
+import Navbar from '../components/Navbar/Navbar'
 
 function MainLayout() {
   return (
-    <div className="app-layout">
-      <Sidebar />
+    <div className="app-layout gv-app-layout">
+      <Navbar />
 
-      <div className="main-content">
+      <div className="main-content gv-main-content">
         <Outlet />
       </div>
     </div>
