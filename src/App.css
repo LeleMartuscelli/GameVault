@@ -2666,3 +2666,47 @@ body {
     padding: 24px 18px 50px;
   }
 }
+
+
+/* =========================================
+   GAMEVAULT — LAYOUT MODERNO
+   Compatibilidade com Navbar horizontal
+========================================= */
+
+.app-layout.gv-app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.app-layout.gv-app-layout > .gv-main-content {
+  display: block;
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  padding: 28px clamp(20px, 4vw, 64px) 64px;
+  background: var(--bg-primary);
+}
+
+/* Dashboard centralizado, com largura controlada */
+.gv-main-content > .gv-dashboard {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+}
+
+/* Evita que o layout antigo force o tema escuro */
+:root[data-theme="dark"] .app-layout.gv-app-layout,
+:root[data-theme="dark"] .app-layout.gv-app-layout > .gv-main-content {
+  background: var(--bg-primary);
+}
+
+@media (max-width: 700px) {
+  .app-layout.gv-app-layout > .gv-main-content {
+    padding: 20px 16px 48px;
+  }
+}

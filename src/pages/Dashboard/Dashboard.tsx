@@ -1,10 +1,13 @@
 
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Gamepad2,
   Medal,
   Play,
+  Plus,
   Trophy,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -22,8 +25,8 @@ function Dashboard() {
   const [allGames, setAllGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [activeGameIndex, setActiveGameIndex] = useState(0)
 
-  // Carregar jogos cadastrados na API
   useEffect(() => {
     async function loadGames() {
       try {
@@ -46,14 +49,12 @@ function Dashboard() {
     loadGames()
   }, [])
 
-  // Jogo em destaque
   const featuredGame = allGames.find((game) =>
     game.title
       .toLowerCase()
-      .includes('the last of us part ii')
+      .includes('modern warfare 4')
   )
 
-  // Estatísticas da biblioteca
   const totalGames = allGames.length
 
   const totalHours = allGames.reduce(
@@ -70,10 +71,39 @@ function Dashboard() {
     0
   )
 
-  // Últimos jogos cadastrados
-  const recentGames = [...allGames]
-    .reverse()
-    .slice(0, 5)
+  const recentGames = [...allGames].reverse().slice(0, 5)
+
+  const changeActiveGame = (direction: number) => {
+    if (recentGames.length === 0) return
+
+    setActiveGameIndex((current) =>
+      (current + direction + recentGames.length) %
+      recentGames.length
+    )
+  }
+
+  const getCardPosition = (index: number) => {
+    const count = recentGames.length
+
+    if (count === 0) return 'hidden'
+
+    const distance =
+      (index - activeGameIndex + count) % count
+
+    if (distance === 0) return 'active'
+    if (distance === 1) return 'right'
+    if (distance === count - 1) return 'left'
+
+    if (count >= 5 && distance === 2) {
+      return 'far-right'
+    }
+
+    if (count >= 5 && distance === count - 2) {
+      return 'far-left'
+    }
+
+    return 'hidden'
+  }
 
   if (loading) {
     return (
@@ -87,15 +117,14 @@ function Dashboard() {
 
   return (
     <main className="dashboard gv-dashboard">
-
       {/* BANNER CINEMATOGRÁFICO */}
       <section
         className="gv-cinematic-hero"
-        aria-label="The Last of Us Part II em destaque"
+        aria-label="Modern Warfare 4 em destaque"
       >
         <img
           src="/banner-gamevault.jpg"
-          alt="Ellie escondida atrás de uma árvore em The Last of Us Part II"
+          alt="Arte promocional de Modern Warfare 4"
           className="gv-cinematic-image"
         />
 
@@ -104,7 +133,6 @@ function Dashboard() {
           aria-hidden="true"
         />
 
-        {/* CONTEÚDO DO BANNER */}
         <div className="gv-cinematic-content">
           <span className="gv-cinematic-eyebrow">
             CONTINUE SUA JORNADA
@@ -127,10 +155,7 @@ function Dashboard() {
                 }
               }}
             >
-              <Play
-                size={15}
-                fill="currentColor"
-              />
+              <Play size={15} fill="currentColor" />
               Ver detalhes
             </button>
 
@@ -206,93 +231,208 @@ function Dashboard() {
             </span>
 
             <h2>
-              Seus jogos. Suas histórias.
+              Seus jogos. <span>Suas histórias.</span>
             </h2>
 
             <p>
-              Reviva suas aventuras e continue
-              de onde parou.
+              Acompanhe tudo o que você joga, suas conquistas e reviva
+              <br className="gv-description-break" />
+              os momentos que marcaram a sua jornada.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => navigate('/biblioteca')}
-          >
-            Ver todos
-            <ArrowRight size={17} />
-          </button>
+          <div className="gv-collection-actions">
+            <button
+              type="button"
+              className="gv-view-all"
+              onClick={() => navigate('/biblioteca')}
+            >
+              Ver todos os jogos
+              <ArrowRight size={16} />
+            </button>
+
+            <button
+              type="button"
+              className="gv-add-game"
+              onClick={() => navigate('/biblioteca')}
+            >
+              <Plus size={17} />
+              Adicionar jogo
+            </button>
+          </div>
         </div>
 
-        {/* ERRO NA API */}
         {error && (
-          <p
-            className="gv-dashboard-message"
-            role="alert"
-          >
+          <p className="gv-dashboard-message" role="alert">
             Não foi possível carregar os jogos.
             Verifique a conexão com a API.
           </p>
         )}
 
-        {/* BIBLIOTECA VAZIA */}
         {!error && recentGames.length === 0 && (
           <p className="gv-dashboard-message">
             Sua biblioteca está vazia.
           </p>
         )}
 
-        {/* CARDS DOS JOGOS */}
-        <div className="recent-games-list">
-          {recentGames.map((game) => {
-            const gameImage = getGameImage(game.title)
+        {!error && recentGames.length > 0 && (
+          <div className="gv-games-carousel gv-games-carousel-wide">
+            <div className="gv-games-carousel-stage">
+              {recentGames.map((game, index) => {
+                const gameImage = getGameImage(game.title)
+                const position = getCardPosition(index)
+                const isActive = position === 'active'
 
-            const isCompleted =
-              game.timesCompleted > 0
-
-            return (
-              <button
-                type="button"
-                className="recent-game-card"
-                key={game.id}
-                onClick={() =>
-                  navigate(`/jogo/${game.id}`)
-                }
-              >
-                <div className="recent-game-cover">
-                  {gameImage ? (
-                    <img
-                      src={gameImage}
-                      alt=""
-                    />
-                  ) : (
-                    <div className="recent-game-placeholder">
-                      <Gamepad2 size={30} />
-                      <span>{game.title}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="gv-recent-game-info">
-                  <h3>{game.title}</h3>
-
-                  <span
-                    className={
-                      isCompleted
-                        ? 'recent-game-status completed'
-                        : 'recent-game-status playing'
-                    }
+                return (
+                  <article
+                    key={game.id}
+                    className={`gv-showcase-card gv-showcase-${position}`}
+                    aria-hidden={position === 'hidden'}
                   >
-                    {isCompleted
-                      ? 'Concluído'
-                      : 'Na biblioteca'}
-                  </span>
-                </div>
-              </button>
-            )
-          })}
+                    <div className="gv-showcase-image">
+                      {gameImage ? (
+                        <img src={gameImage} alt="" />
+                      ) : (
+                        <div className="gv-showcase-placeholder">
+                          <Gamepad2 size={34} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="gv-showcase-gradient" />
+
+                    <div className="gv-showcase-content">
+                      <h3>{game.title}</h3>
+
+                      <span className="gv-showcase-platform">
+                        {game.platform}
+                      </span>
+                    </div>
+
+                    <div className="gv-showcase-stats">
+                      <div>
+                        <Clock3 size={16} />
+                        <span>
+                          <strong>
+                            {game.hoursPlayed.toLocaleString('pt-BR')}h
+                          </strong>
+                          <small>Horas jogadas</small>
+                        </span>
+                      </div>
+
+                      <div>
+                        <Trophy size={16} />
+                        <span>
+                          <strong>{game.timesCompleted}</strong>
+                          <small>Vezes zerado</small>
+                        </span>
+                      </div>
+
+                      <div>
+                        <Medal size={16} />
+                        <span>
+                          <strong>{game.achievements}</strong>
+                          <small>Conquistas</small>
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="gv-showcase-details"
+                        aria-label={`Ver detalhes de ${game.title}`}
+                        tabIndex={isActive ? 0 : -1}
+                        onClick={() =>
+                          navigate(`/jogo/${game.id}`)
+                        }
+                      >
+                        <ChevronRight size={21} />
+                      </button>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+
+            {recentGames.length > 1 && (
+              <div
+                className="gv-carousel-navigation"
+                aria-label="Navegação entre jogos"
+              >
+                <button
+                  type="button"
+                  onClick={() => changeActiveGame(-1)}
+                  aria-label="Jogo anterior"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+
+                <span>
+                  {activeGameIndex + 1} / {recentGames.length}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => changeActiveGame(1)}
+                  aria-label="Próximo jogo"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* ENCERRAMENTO — HISTÓRIA DO JOGADOR */}
+      <section className="gv-journey" aria-labelledby="gv-journey-title">
+        <div className="gv-journey-visual" aria-hidden="true">
+          <Gamepad2 size={112} strokeWidth={0.7} />
+        </div>
+        <div className="gv-journey-content">
+          <span className="gv-eyebrow">SUA JORNADA CONTINUA</span>
+          <h2 id="gv-journey-title">
+            Cada jogo conta uma história.
+            <span> A sua merece ser lembrada.</span>
+          </h2>
+          <p>
+            Das primeiras aventuras às conquistas de hoje.
+            Organize seus jogos e preserve os momentos da sua trajetória.
+          </p>
+          <button type="button" onClick={() => navigate('/biblioteca')}>
+            Explorar minha biblioteca <ArrowRight size={17} />
+          </button>
         </div>
       </section>
+
+      {/* RODAPÉ — PLATAFORMAS E IDENTIDADE */}
+      <footer className="gv-footer">
+        <div className="gv-footer-top">
+          <div className="gv-footer-brand">
+            <strong>GameVault</strong>
+            <p>Seus jogos. Suas histórias. Sua trajetória.</p>
+          </div>
+          <nav className="gv-footer-links" aria-label="Links do rodapé">
+            <button type="button" onClick={() => navigate('/')}>Início</button>
+            <button type="button" onClick={() => navigate('/biblioteca')}>Biblioteca</button>
+            <button type="button" onClick={() => navigate('/favoritos')}>Favoritos</button>
+          </nav>
+          <div className="gv-footer-platforms" aria-label="Plataformas de jogos">
+            {['steam', 'xbox', 'playstation', 'discord'].map((platform) => (
+              <span key={platform} className="gv-platform-icon" title={platform}>
+                <img
+                  src={`https://cdn.simpleicons.org/${platform}/888888`}
+                  alt={platform === 'playstation' ? 'PlayStation' : platform.charAt(0).toUpperCase() + platform.slice(1)}
+                  loading="lazy"
+                />
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="gv-footer-bottom">
+          <span>© {new Date().getFullYear()} GameVault. Todos os direitos reservados.</span>
+          <span>Feito para quem vive cada história.</span>
+        </div>
+      </footer>
     </main>
   )
 }

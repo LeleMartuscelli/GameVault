@@ -1,46 +1,45 @@
-import { Clock3, Heart, Trophy } from 'lucide-react'
+import { ArrowRight, Clock3, Gamepad2, Heart, Trophy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getGameImage } from '../../data/gameImage'
-import {
-  getGames,
-  updateGame,
-} from '../../services/gameApi'
+import { getGames, updateGame } from '../../services/gameApi'
 import type { Game } from '../../types/games'
+import '../Library/Library.css'
+import './Favorites.css'
 
 function Favorites() {
   const navigate = useNavigate()
-
-  const [favoriteGames, setFavoriteGames] =
-    useState<Game[]>([])
+  const [favoriteGames, setFavoriteGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [removingId, setRemovingId] = useState<Game['id'] | null>(null)
 
   useEffect(() => {
+    let active = true
+
     async function loadFavoriteGames() {
       try {
         const games = await getGames()
-
-        const favorites = games.filter(
-          (game) => game.favorite
-        )
-
-        setFavoriteGames(favorites)
+        if (active) {
+          setFavoriteGames(games.filter((game) => game.favorite))
+          setLoadError(false)
+        }
       } catch (error) {
-        console.error(
-          'Erro ao carregar favoritos:',
-          error
-        )
+        console.error('Erro ao carregar favoritos:', error)
+        if (active) setLoadError(true)
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
 
-    loadFavoriteGames()
+    void loadFavoriteGames()
+    return () => { active = false }
   }, [])
 
-  async function handleRemoveFavorite(
-    game: Game
-  ) {
+  async function handleRemoveFavorite(game: Game) {
+    if (removingId !== null) return
+    setRemovingId(game.id)
+
     try {
       await updateGame(game.id, {
         title: game.title,
@@ -53,151 +52,103 @@ function Favorites() {
       })
 
       setFavoriteGames((currentGames) =>
-        currentGames.filter(
-          (currentGame) =>
-            currentGame.id !== game.id
-        )
+        currentGames.filter((currentGame) => currentGame.id !== game.id)
       )
     } catch (error) {
-      console.error(
-        'Erro ao remover favorito:',
-        error
-      )
-
-      alert(
-        'Não foi possível remover o jogo dos favoritos.'
-      )
+      console.error('Erro ao remover favorito:', error)
+      alert('Não foi possível remover o jogo dos favoritos.')
+    } finally {
+      setRemovingId(null)
     }
   }
 
-  if (loading) {
-    return (
-      <main className="library-page">
-        <header className="library-header">
-          <div>
-            <h1>Favoritos</h1>
-            <p>Carregando seus jogos favoritos...</p>
-          </div>
-        </header>
-      </main>
-    )
-  }
+  const totalHours = favoriteGames.reduce((sum, game) => sum + game.hoursPlayed, 0)
+  const completedGames = favoriteGames.filter((game) => game.timesCompleted > 0).length
 
   return (
-    <main className="library-page">
-      <header className="library-header">
-        <div>
-          <h1>Favoritos</h1>
-          <p>
-            Seus jogos favoritos em um só lugar.
-          </p>
+    <main className="gv-library gv-favorites">
+      <header className="gv-library-intro">
+        <div className="gv-library-intro-copy">
+          <span className="gv-library-eyebrow">SUA SELEÇÃO ESPECIAL</span>
+          <h1>Jogos que ficam.<br /><span>Histórias que marcam.</span></h1>
+          <p>Um espaço para os títulos que fizeram parte dos seus melhores momentos. Seus favoritos, sempre por perto.</p>
         </div>
+        <button type="button" className="gv-library-primary" onClick={() => navigate('/biblioteca')}>
+          Explorar biblioteca <ArrowRight size={17} aria-hidden="true" />
+        </button>
       </header>
 
-      {favoriteGames.length === 0 ? (
-        <section className="library-empty">
-          <Heart size={42} />
+      <section className="gv-library-overview" aria-label="Resumo dos favoritos">
+        <div className="gv-library-overview-item"><Heart size={21} aria-hidden="true" /><div><strong>{favoriteGames.length}</strong><span>Jogos favoritos</span></div></div>
+        <div className="gv-library-overview-item"><Clock3 size={21} aria-hidden="true" /><div><strong>{totalHours.toLocaleString('pt-BR')}h</strong><span>Horas nos favoritos</span></div></div>
+        <div className="gv-library-overview-item"><Trophy size={21} aria-hidden="true" /><div><strong>{completedGames}</strong><span>Jogos concluídos</span></div></div>
+      </section>
 
-          <h2>Nenhum favorito ainda</h2>
+      <section className="gv-library-collection" aria-label="Jogos favoritos">
+        <div className="gv-library-section-heading">
+          <div>
+            <span className="gv-library-eyebrow">SELEÇÃO PESSOAL</span>
+            <h2>Meus favoritos <span className="gv-library-count">{favoriteGames.length}</span></h2>
+          </div>
+        </div>
 
-          <p>
-            Marque jogos com o coração na Biblioteca
-            para encontrá-los aqui.
-          </p>
-
-          <button
-            type="button"
-            className="game-card-button"
-            onClick={() =>
-              navigate('/biblioteca')
-            }
-          >
-            Ir para a biblioteca
-          </button>
-        </section>
-      ) : (
-        <section className="library-grid">
-          {favoriteGames.map((game) => {
-            const gameImage =
-              getGameImage(game.title)
-
-            return (
-              <article
-                className="game-card"
-                key={game.id}
-              >
-                <div className="game-card-image">
-                  {gameImage ? (
-                    <img
-                      src={gameImage}
-                      alt={game.title}
-                      className="game-card-cover"
-                    />
-                  ) : (
-                    <div className="game-card-placeholder">
-                      {game.title}
-                    </div>
-                  )}
-
-                  <button
-                    type="button"
-                    className="favorite-button active"
-                    aria-label="Remover dos favoritos"
-                    title="Remover dos favoritos"
-                    onClick={() =>
-                      handleRemoveFavorite(game)
-                    }
-                  >
-                    <Heart
-                      size={20}
-                      fill="currentColor"
-                    />
-                  </button>
-                </div>
-
-                <div className="game-card-content">
-                  <h2>{game.title}</h2>
-
-                  <div className="game-card-info">
-                    <span>
-                      <Clock3 size={15} />
-
-                      {game.hoursPlayed.toLocaleString(
-                        'pt-BR'
-                      )}
-                      h jogadas
-                    </span>
-
-                    {game.timesCompleted > 0 && (
-                      <span>
-                        <Trophy size={15} />
-
-                        Zerado{' '}
-                        {game.timesCompleted}{' '}
-                        {game.timesCompleted === 1
-                          ? 'vez'
-                          : 'vezes'}
-                      </span>
+        {loading ? (
+          <div className="gv-library-empty" role="status"><Heart size={29} aria-hidden="true" /><h3>Carregando seus favoritos...</h3><p>Estamos preparando sua seleção de jogos.</p></div>
+        ) : loadError ? (
+          <div className="gv-library-empty" role="alert"><Gamepad2 size={29} aria-hidden="true" /><h3>Não foi possível carregar seus favoritos</h3><p>Verifique sua conexão com a API e atualize a página.</p></div>
+        ) : favoriteGames.length === 0 ? (
+          <div className="gv-library-empty gv-favorites-empty">
+            <div className="gv-favorites-empty-symbol"><Heart size={34} strokeWidth={1.5} aria-hidden="true" /></div>
+            <span className="gv-library-eyebrow">SUA LISTA AINDA ESTÁ EM BRANCO</span>
+            <h3>Alguns jogos merecem<br />um lugar especial.</h3>
+            <p>Encontre seus títulos preferidos na Biblioteca e marque o coração para reuni-los aqui.</p>
+            <button type="button" className="gv-library-primary" onClick={() => navigate('/biblioteca')}>
+              Descobrir minha biblioteca <ArrowRight size={17} aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <div className="gv-library-grid">
+            {favoriteGames.map((game) => {
+              const image = getGameImage(game.title)
+              return (
+                <article className="gv-library-card" key={game.id}>
+                  <div className="gv-library-card-media">
+                    {image ? (
+                      <img src={image} alt="" loading="lazy" />
+                    ) : (
+                      <div className="gv-library-card-placeholder"><Gamepad2 size={34} aria-hidden="true" /><span>GAMEVAULT</span></div>
                     )}
+                    <span className="gv-library-platform">{game.platform}</span>
+                    <button
+                      type="button"
+                      className="gv-library-favorite is-active"
+                      aria-label={`Remover ${game.title} dos favoritos`}
+                      title="Remover dos favoritos"
+                      aria-pressed="true"
+                      disabled={removingId !== null}
+                      onClick={() => void handleRemoveFavorite(game)}
+                    >
+                      <Heart size={19} fill="currentColor" aria-hidden="true" />
+                    </button>
                   </div>
-
-                  <button
-                    type="button"
-                    className="game-card-button"
-                    onClick={() =>
-                      navigate(
-                        `/jogo/${game.id}`
-                      )
-                    }
-                  >
-                    Ver detalhes
-                  </button>
-                </div>
-              </article>
-            )
-          })}
-        </section>
-      )}
+                  <div className="gv-library-card-body">
+                    <h3>{game.title}</h3>
+                    <div className="gv-library-card-metrics">
+                      <span><Clock3 size={15} aria-hidden="true" />{game.hoursPlayed.toLocaleString('pt-BR')}h jogadas</span>
+                      {game.timesCompleted > 0 && (
+                        <span><Trophy size={15} aria-hidden="true" />Zerado {game.timesCompleted} {game.timesCompleted === 1 ? 'vez' : 'vezes'}</span>
+                      )}
+                    </div>
+                    <button type="button" className="gv-library-details" onClick={() => navigate(`/jogo/${game.id}`)}>
+                      Ver detalhes <ArrowRight size={17} aria-hidden="true" />
+                    </button>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        )}
+      </section>
     </main>
   )
 }

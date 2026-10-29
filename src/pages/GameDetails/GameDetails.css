@@ -1,0 +1,47 @@
+/* GameVault — Detalhes do jogo | identidade premium */
+.gv-detail-page{width:100%;max-width:1440px;margin:0 auto;padding:8px 0 72px;color:var(--text-primary,#111)}
+.gv-detail-page *{box-sizing:border-box}
+.gv-detail-topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
+.gv-detail-back{display:inline-flex;align-items:center;gap:9px;border:0;background:transparent;color:var(--text-secondary,#777);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:10px 0;transition:color .2s}
+.gv-detail-back:hover{color:var(--text-primary,#111)}
+.gv-detail-breadcrumb,.gv-detail-eyebrow,.gv-detail-kicker{font-size:10px;font-weight:700;letter-spacing:.19em}
+.gv-detail-breadcrumb{color:var(--text-secondary,#777)}
+.gv-detail-hero{height:clamp(360px,43vw,570px);position:relative;overflow:hidden;border-radius:22px;background:#171a20;isolation:isolate}
+.gv-detail-hero-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%}
+.gv-detail-hero-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#666b76;background:radial-gradient(ellipse at 70% 20%,#343b49 0%,#191d25 45%,#111319 100%)}
+.gv-detail-hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,9,13,.85),rgba(7,9,13,.35) 62%,rgba(7,9,13,.12)),linear-gradient(0deg,rgba(7,9,13,.75),transparent 55%)}
+.gv-detail-hero-content{position:absolute;bottom:clamp(28px,5vw,65px);left:clamp(25px,5vw,70px);right:24px;color:#fff;max-width:760px}
+.gv-detail-eyebrow{color:rgba(255,255,255,.76)}
+.gv-detail-hero h1{font-size:clamp(38px,6.4vw,88px);font-weight:700;line-height:1.02;letter-spacing:-.065em;margin:18px 0 24px;text-wrap:balance}
+.gv-detail-tags{display:flex;flex-wrap:wrap;gap:9px}
+.gv-detail-tags span{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:rgba(255,255,255,.10);color:#fff;font-size:12px;backdrop-filter:blur(12px)}
+.gv-detail-intro{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:58px 0 34px}
+.gv-detail-kicker{color:var(--text-secondary,#777)}
+.gv-detail-intro h2,.gv-detail-management h2{font-size:clamp(27px,3.3vw,43px);line-height:1.12;letter-spacing:-.055em;font-weight:650;margin:13px 0 12px}
+.gv-detail-intro p,.gv-detail-management p{max-width:610px;font-size:14px;line-height:1.8;color:var(--text-secondary,#777);margin:0}
+.gv-detail-favorite,.gv-detail-primary,.gv-detail-danger{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:45px;padding:12px 18px;border-radius:10px;font:inherit;font-size:13px;font-weight:650;cursor:pointer;transition:transform .2s,background .2s,color .2s,border-color .2s;white-space:nowrap}
+.gv-detail-favorite{background:var(--bg-secondary,#f5f5f7);color:var(--text-primary,#111);border:1px solid var(--border-color,rgba(0,0,0,.08))}
+.gv-detail-favorite.is-active{color:#d44b59}
+.gv-detail-favorite:hover,.gv-detail-primary:hover,.gv-detail-danger:hover{transform:translateY(-2px)}
+.gv-detail-favorite:disabled,.gv-detail-primary:disabled,.gv-detail-danger:disabled{opacity:.55;cursor:wait;transform:none}
+.gv-detail-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--border-color,rgba(0,0,0,.08));border-radius:18px;overflow:hidden;background:var(--bg-secondary,#f5f5f7)}
+.gv-detail-stat{min-width:0;padding:clamp(24px,3.2vw,42px);display:flex;flex-direction:column;align-items:flex-start}
+.gv-detail-stat+.gv-detail-stat{border-left:1px solid var(--border-color,rgba(0,0,0,.08))}
+.gv-detail-stat>svg{color:var(--text-secondary,#777);margin-bottom:24px}
+.gv-detail-stat>span{color:var(--text-secondary,#777);font-size:10px;font-weight:700;letter-spacing:.16em}
+.gv-detail-stat strong{font-size:clamp(34px,4.2vw,58px);font-weight:650;letter-spacing:-.07em;line-height:1.1;margin:12px 0 8px;font-variant-numeric:tabular-nums}
+.gv-detail-stat strong small{font-size:.43em;margin-left:4px;letter-spacing:0}
+.gv-detail-stat p{font-size:12px;color:var(--text-secondary,#777);margin:0;line-height:1.5}
+.gv-detail-management{display:flex;justify-content:space-between;align-items:center;gap:32px;margin-top:70px;padding:34px 0;border-top:1px solid var(--border-color,rgba(0,0,0,.08))}
+.gv-detail-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gv-detail-primary{background:var(--text-primary,#111);color:var(--bg-primary,#fff);border:1px solid transparent}
+.gv-detail-danger{background:transparent;color:#cf4856;border:1px solid var(--border-color,rgba(0,0,0,.08))}
+.gv-detail-danger:hover{background:rgba(207,72,86,.06);border-color:rgba(207,72,86,.35)}
+.gv-detail-error{padding:14px 16px;border-radius:10px;background:rgba(207,72,86,.08);color:#cf4856;font-size:13px;margin:18px 0 0}
+.gv-detail-feedback{min-height:390px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;border:1px solid var(--border-color,rgba(0,0,0,.08));background:var(--bg-secondary,#f5f5f7);border-radius:20px;margin-top:24px}
+.gv-detail-feedback>svg{color:var(--text-secondary,#777);margin-bottom:20px}
+.gv-detail-feedback h1{font-size:clamp(26px,3vw,38px);letter-spacing:-.05em;margin:0 0 12px}
+.gv-detail-feedback p{color:var(--text-secondary,#777);font-size:14px;margin:0 0 25px}
+@media(max-width:900px){.gv-detail-intro,.gv-detail-management{align-items:flex-start;flex-direction:column}.gv-detail-management{margin-top:48px}.gv-detail-intro{padding-top:40px}}
+@media(max-width:650px){.gv-detail-page{padding-bottom:40px}.gv-detail-breadcrumb{display:none}.gv-detail-hero{height:420px;border-radius:16px}.gv-detail-hero-shade{background:linear-gradient(0deg,rgba(7,9,13,.9),rgba(7,9,13,.05) 90%)}.gv-detail-hero-content{left:24px;bottom:30px}.gv-detail-hero h1{font-size:clamp(34px,9vw,54px)}.gv-detail-stats{grid-template-columns:1fr}.gv-detail-stat{padding:24px}.gv-detail-stat+.gv-detail-stat{border-left:0;border-top:1px solid var(--border-color,rgba(0,0,0,.08))}.gv-detail-stat>svg{margin-bottom:14px}.gv-detail-stat strong{margin:8px 0}.gv-detail-actions{width:100%}.gv-detail-actions button{flex:1;white-space:normal}.gv-detail-intro{padding-top:34px}}
+@media(prefers-reduced-motion:reduce){.gv-detail-page button{transition:none}}

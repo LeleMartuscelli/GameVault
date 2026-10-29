@@ -1,0 +1,8 @@
+/* GameVault Favoritos: complementa o design compartilhado com Library.css. */
+.gv-favorites .gv-library-collection { padding-bottom: 28px; }
+.gv-favorites-empty { min-height: 410px; padding: 60px 24px; }
+.gv-favorites-empty-symbol { display:grid; place-items:center; width:76px; height:76px; margin-bottom:26px; border:1px solid var(--border-color); border-radius:24px; background:var(--bg-primary); color:var(--text-primary); }
+.gv-favorites-empty > .gv-library-eyebrow { margin-bottom:13px; }
+.gv-favorites-empty h3 { font-size:clamp(1.6rem,3vw,2.35rem); line-height:1.15; letter-spacing:-.055em; margin-bottom:16px; }
+.gv-favorites-empty p { max-width:410px; margin-bottom:25px; }
+@media(max-width:700px) { .gv-favorites-empty { min-height:360px; padding:42px 18px; } }

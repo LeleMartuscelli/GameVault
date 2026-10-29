@@ -1,4 +1,3 @@
-
 /* =========================================
    GAMEVAULT — DASHBOARD PREMIUM
 ========================================= */
@@ -244,14 +243,15 @@
 
 .gv-dashboard .gv-recent-games {
   margin-top: 64px;
+  padding-bottom: 36px;
 }
 
 .gv-dashboard .recent-games-header {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 26px;
+  gap: 24px;
+  margin-bottom: 18px;
 }
 
 .gv-dashboard .recent-games-header h2 {
@@ -264,124 +264,365 @@
 }
 
 .gv-dashboard .recent-games-header p {
+  max-width: 450px;
   margin: 0;
   color: var(--text-secondary);
   font-size: 0.92rem;
   line-height: 1.5;
 }
 
-.gv-dashboard .recent-games-header button {
+/* =========================================
+   AÇÕES DA COLEÇÃO
+========================================= */
+
+.gv-dashboard .gv-collection-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.gv-dashboard .gv-collection-actions button {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  padding: 9px 0;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 0.87rem;
+  justify-content: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 19px;
+  border-radius: 999px;
+  font-size: 0.8rem;
   font-weight: 650;
+  white-space: nowrap;
   cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
 }
 
-.gv-dashboard .recent-games-header button:hover {
-  color: var(--text-secondary);
+.gv-dashboard .gv-collection-actions button:hover {
+  transform: translateY(-2px);
 }
 
-/* Lista horizontal */
-
-.gv-dashboard .recent-games-list {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 20px;
-  overflow-x: auto;
-  padding: 4px 2px 20px;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
-}
-
-.gv-dashboard .recent-game-card {
-  display: block;
-  flex: 0 0 clamp(200px, 22vw, 280px);
-  width: clamp(200px, 22vw, 280px);
-  min-width: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  text-align: left;
-  cursor: pointer;
-  scroll-snap-align: start;
-}
-
-/* Capas */
-
-.gv-dashboard .recent-game-cover {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  margin-bottom: 14px;
-  overflow: hidden;
+.gv-dashboard .gv-view-all {
   border: 1px solid var(--border-color);
-  border-radius: 18px;
   background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
-.gv-dashboard .recent-game-cover img {
+.gv-dashboard .gv-add-game {
+  border: 1px solid var(--text-primary);
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+/* =========================================
+   CARROSSEL CINEMATOGRÁFICO
+========================================= */
+
+.gv-dashboard .gv-games-carousel {
+  position: relative;
+  width: 100vw;
+  max-width: 100vw;
+  min-width: 0;
+  margin-left: calc(50% - 50vw);
+}
+
+.gv-dashboard .gv-games-carousel-stage {
+  position: relative;
+  width: 100%;
+  height: 440px;
+  overflow: hidden;
+  isolation: isolate;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);
+}
+
+/* =========================================
+   CARDS
+========================================= */
+
+.gv-dashboard .gv-showcase-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(310px, 28.3vw, 455px);
+  height: 360px;
+  overflow: hidden;
+  border-radius: 17px;
+  background: #14171b;
+  color: #fff;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.22);
+  transform-origin: center center;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease,
+    filter 0.4s ease;
+}
+
+.gv-dashboard .gv-showcase-active {
+  z-index: 5;
+  opacity: 1;
+  filter: none;
+  transform: translate(-50%, -53%) scale(1);
+}
+
+.gv-dashboard .gv-showcase-left {
+  z-index: 3;
+  opacity: 1;
+  filter: brightness(0.94);
+  transform: translate(calc(-50% - 83%), -43%) scale(0.83);
+}
+
+.gv-dashboard .gv-showcase-right {
+  z-index: 3;
+  opacity: 1;
+  filter: brightness(0.94);
+  transform: translate(calc(-50% + 83%), -43%) scale(0.83);
+}
+
+.gv-dashboard .gv-showcase-far-left {
+  z-index: 1;
+  opacity: 0.75;
+  filter: brightness(0.92) blur(0.4px);
+  transform: translate(calc(-50% - 153%), -39%) scale(0.69);
+}
+
+.gv-dashboard .gv-showcase-far-right {
+  z-index: 1;
+  opacity: 0.75;
+  filter: brightness(0.92) blur(0.4px);
+  transform: translate(calc(-50% + 153%), -39%) scale(0.69);
+}
+
+.gv-dashboard .gv-showcase-hidden {
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.65);
+}
+
+/* =========================================
+   IMAGEM DO CARD
+========================================= */
+
+.gv-dashboard .gv-showcase-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.gv-dashboard .gv-showcase-image img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  object-position: center;
+  transition: transform 0.5s ease;
 }
 
-.gv-dashboard .recent-game-card:hover .recent-game-cover img {
-  transform: scale(1.045);
+.gv-dashboard .gv-showcase-active:hover .gv-showcase-image img {
+  transform: scale(1.05);
 }
 
-.gv-dashboard .recent-game-placeholder {
+.gv-dashboard .gv-showcase-placeholder {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
   width: 100%;
   height: 100%;
-  padding: 20px;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  text-align: center;
+  background: linear-gradient(
+    135deg,
+    #252a33,
+    #111419
+  );
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.gv-dashboard .gv-recent-game-info {
-  padding: 0 4px;
-}
-
-.gv-dashboard .recent-game-card h3 {
-  width: 100%;
-  margin: 0 0 10px;
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  font-weight: 650;
-  line-height: 1.4;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.gv-dashboard .recent-game-status,
-.gv-dashboard .recent-game-status.completed,
-.gv-dashboard .recent-game-status.playing {
-  display: inline-block;
-  padding: 5px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-size: 0.72rem;
+.gv-dashboard .gv-showcase-gradient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.02) 0%,
+    rgba(0, 0, 0, 0.08) 25%,
+    rgba(0, 0, 0, 0.5) 55%,
+    rgba(0, 0, 0, 0.88) 100%
+  );
 }
 
 /* =========================================
-   RESPONSIVIDADE
+   TÍTULO E PLATAFORMA
+========================================= */
+
+.gv-dashboard .gv-showcase-content {
+  position: absolute;
+  right: 18px;
+  bottom: 76px;
+  left: 18px;
+  z-index: 2;
+}
+
+.gv-dashboard .gv-showcase-content h3 {
+  max-width: 85%;
+  margin: 0 0 9px;
+  color: #fff;
+  font-size: clamp(1.15rem, 1.65vw, 1.5rem);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.gv-dashboard .gv-showcase-platform {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 22px;
+  padding: 3px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.65rem;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+}
+
+/* =========================================
+   FAIXA DE ESTATÍSTICAS DO CARD
+========================================= */
+
+.gv-dashboard .gv-showcase-stats {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  min-height: 65px;
+  padding: 12px 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 9, 11, 0.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.gv-dashboard .gv-showcase-stats > div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.gv-dashboard .gv-showcase-stats > div > svg {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.gv-dashboard .gv-showcase-stats > div > span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.gv-dashboard .gv-showcase-stats strong {
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.gv-dashboard .gv-showcase-stats small {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.53rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* =========================================
+   BOTÃO DE DETALHES
+========================================= */
+
+.gv-dashboard .gv-showcase-details {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 37px;
+  height: 37px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.gv-dashboard .gv-showcase-details:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.08);
+}
+
+.gv-dashboard .gv-showcase-card:not(.gv-showcase-active)
+.gv-showcase-details {
+  pointer-events: none;
+}
+
+/* =========================================
+   NAVEGAÇÃO DO CARROSSEL
+========================================= */
+
+.gv-dashboard .gv-carousel-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 4px;
+}
+
+.gv-dashboard .gv-carousel-navigation button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.gv-dashboard .gv-carousel-navigation button:hover {
+  background: var(--bg-primary);
+  transform: scale(1.06);
+}
+
+.gv-dashboard .gv-carousel-navigation span {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================
+   RESPONSIVIDADE — TABLET
 ========================================= */
 
 @media (max-width: 1100px) {
@@ -392,7 +633,38 @@
   .gv-dashboard .gv-cinematic-content {
     width: min(330px, 43%);
   }
+
+  .gv-dashboard .gv-showcase-card {
+    width: clamp(270px, 36vw, 375px);
+    height: 315px;
+  }
+
+  .gv-dashboard .gv-games-carousel-stage {
+    height: 390px;
+  }
+
+  .gv-dashboard .gv-showcase-left {
+    transform: translate(calc(-50% - 83%), -43%) scale(0.83);
+  }
+
+  .gv-dashboard .gv-showcase-right {
+    transform: translate(calc(-50% + 83%), -43%) scale(0.83);
+  }
+
+  .gv-dashboard .gv-showcase-far-left {
+    transform: translate(calc(-50% - 153%), -39%) scale(0.69);
+  }
+
+  .gv-dashboard .gv-showcase-far-right {
+    transform: translate(calc(-50% + 153%), -39%) scale(0.69);
+  }
 }
+
+
+
+/* =========================================
+   RESPONSIVIDADE — MOBILE
+========================================= */
 
 @media (max-width: 700px) {
   .gv-dashboard .gv-cinematic-hero {
@@ -448,18 +720,71 @@
   }
 
   .gv-dashboard .recent-games-header {
+    flex-direction: column;
     align-items: flex-start;
+    gap: 18px;
   }
 
   .gv-dashboard .recent-games-header h2 {
     font-size: 1.65rem;
   }
 
-  .gv-dashboard .recent-game-card {
-    flex-basis: 205px;
-    width: 205px;
+  .gv-dashboard .gv-collection-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .gv-dashboard .gv-collection-actions button {
+    min-height: 39px;
+    padding: 0 14px;
+    font-size: 0.73rem;
+  }
+
+  .gv-dashboard .gv-games-carousel-stage {
+    height: 320px;
+  }
+
+  .gv-dashboard .gv-showcase-card {
+    width: min(78vw, 330px);
+    height: 255px;
+  }
+
+  .gv-dashboard .gv-showcase-active {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .gv-dashboard .gv-showcase-left {
+    opacity: 0.6;
+    transform:
+      translate(calc(-50% - 88%), -47%)
+      scale(0.8);
+  }
+
+  .gv-dashboard .gv-showcase-right {
+    opacity: 0.6;
+    transform:
+      translate(calc(-50% + 88%), -47%)
+      scale(0.8);
+  }
+
+  .gv-dashboard .gv-showcase-far-left,
+  .gv-dashboard .gv-showcase-far-right {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .gv-dashboard .gv-showcase-content h3 {
+    font-size: 1.3rem;
+  }
+
+  .gv-dashboard .gv-showcase-stats {
+    padding: 10px;
   }
 }
+
+/* =========================================
+   RESPONSIVIDADE — TELAS PEQUENAS
+========================================= */
 
 @media (max-width: 390px) {
   .gv-dashboard .gv-stats-grid {
@@ -475,4 +800,297 @@
     padding: 0 15px;
     font-size: 0.76rem;
   }
+
+  .gv-dashboard .gv-showcase-card {
+    width: min(83vw, 310px);
+    height: 245px;
+  }
+
+  .gv-dashboard .gv-showcase-content {
+    right: 13px;
+    bottom: 75px;
+    left: 13px;
+  }
+
+  .gv-dashboard .gv-showcase-content h3 {
+    font-size: 1.15rem;
+  }
+
+  .gv-dashboard .gv-showcase-stats {
+    gap: 4px;
+    padding: 9px 8px;
+  }
+
+  .gv-dashboard .gv-showcase-stats > div {
+    gap: 3px;
+  }
+
+  .gv-dashboard .gv-showcase-stats > div > svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .gv-dashboard .gv-showcase-stats strong {
+    font-size: 0.65rem;
+  }
+
+  .gv-dashboard .gv-showcase-stats small {
+    font-size: 0.47rem;
+  }
+
+  .gv-dashboard .gv-showcase-details {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* =========================================
+   ACESSIBILIDADE
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .gv-dashboard .gv-showcase-card,
+  .gv-dashboard .gv-showcase-image img,
+  .gv-dashboard .gv-carousel-navigation button,
+  .gv-dashboard .gv-showcase-details {
+    transition: none;
+  }
+}
+/* =========================================
+   AJUSTES FINAIS — REFERÊNCIA VISUAL
+   Apenas coleção e carrossel
+========================================= */
+
+.gv-dashboard .recent-games-header h2 span,
+.gv-dashboard .recent-games-header h2 .gv-heading-muted {
+  color: var(--text-secondary);
+}
+
+.gv-dashboard .gv-games-carousel-wide {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+/* A navegação fica centralizada abaixo dos cards. */
+.gv-dashboard .gv-carousel-navigation {
+  margin-top: -8px;
+  position: relative;
+  z-index: 6;
+}
+
+@media (max-width: 700px) {
+  .gv-dashboard .gv-games-carousel,
+  .gv-dashboard .gv-games-carousel-wide {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+  }
+
+  .gv-dashboard .gv-games-carousel-stage {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
+  }
+}
+/* =========================================
+   GAMEVAULT — CARROSSEL CINEMATOGRÁFICO V3
+   Cinco posições, sobreposição controlada
+   Não modifica dados nem navegação do React.
+========================================= */
+.gv-dashboard .gv-games-carousel-stage {
+  height: 465px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 5%, #000 95%, transparent 100%);
+}
+
+.gv-dashboard .gv-showcase-card {
+  top: 50%;
+  left: 50%;
+  width: clamp(300px, 24vw, 425px);
+  height: 355px;
+  transform-origin: center center;
+  transition: transform .55s cubic-bezier(.22, 1, .36, 1), opacity .45s ease, filter .45s ease;
+}
+
+.gv-dashboard .gv-showcase-active {
+  z-index: 5;
+  opacity: 1;
+  filter: none;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Deslocamentos aplicados depois da centralização, em pixels de tela.
+   A pequena interseção dos cards cria profundidade sem esconder os títulos. */
+.gv-dashboard .gv-showcase-left {
+  z-index: 3;
+  opacity: .96;
+  filter: brightness(.88);
+  transform: translate(-50%, -50%) translateX(calc(-1 * clamp(290px, 22.5vw, 405px))) scale(.87);
+}
+.gv-dashboard .gv-showcase-right {
+  z-index: 3;
+  opacity: .96;
+  filter: brightness(.88);
+  transform: translate(-50%, -50%) translateX(clamp(290px, 22.5vw, 405px)) scale(.87);
+}
+.gv-dashboard .gv-showcase-far-left {
+  z-index: 1;
+  opacity: .68;
+  filter: brightness(.77);
+  transform: translate(-50%, -50%) translateX(calc(-1 * clamp(515px, 39vw, 705px))) scale(.72);
+}
+.gv-dashboard .gv-showcase-far-right {
+  z-index: 1;
+  opacity: .68;
+  filter: brightness(.77);
+  transform: translate(-50%, -50%) translateX(clamp(515px, 39vw, 705px)) scale(.72);
+}
+.gv-dashboard .gv-showcase-hidden {
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(.65);
+}
+
+/* Apenas o jogo em destaque é interativo; as setas continuam navegáveis. */
+.gv-dashboard .gv-showcase-card:not(.gv-showcase-active) {
+  pointer-events: none;
+}
+.gv-dashboard .gv-showcase-placeholder {
+  background: linear-gradient(155deg, #252b34, #11151b 75%);
+}
+.gv-dashboard .gv-carousel-navigation {
+  position: relative;
+  z-index: 6;
+  margin-top: -3px;
+}
+
+@media (max-width: 1100px) {
+  .gv-dashboard .gv-games-carousel-stage { height: 410px; }
+  .gv-dashboard .gv-showcase-card { width: clamp(270px, 32vw, 365px); height: 315px; }
+  .gv-dashboard .gv-showcase-left { transform: translate(-50%, -50%) translateX(-285px) scale(.84); }
+  .gv-dashboard .gv-showcase-right { transform: translate(-50%, -50%) translateX(285px) scale(.84); }
+  .gv-dashboard .gv-showcase-far-left { transform: translate(-50%, -50%) translateX(-510px) scale(.7); }
+  .gv-dashboard .gv-showcase-far-right { transform: translate(-50%, -50%) translateX(510px) scale(.7); }
+}
+
+@media (max-width: 700px) {
+  .gv-dashboard .gv-games-carousel-stage {
+    height: 330px;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+  }
+  .gv-dashboard .gv-showcase-card { width: min(79vw, 330px); height: 255px; }
+  .gv-dashboard .gv-showcase-active { transform: translate(-50%, -50%) scale(1); }
+  .gv-dashboard .gv-showcase-left { opacity: .6; transform: translate(-50%, -50%) translateX(-73vw) scale(.8); }
+  .gv-dashboard .gv-showcase-right { opacity: .6; transform: translate(-50%, -50%) translateX(73vw) scale(.8); }
+  .gv-dashboard .gv-showcase-far-left,
+  .gv-dashboard .gv-showcase-far-right { opacity: 0; pointer-events: none; }
+}
+
+@media (max-width: 390px) {
+  .gv-dashboard .gv-showcase-card { width: min(83vw, 310px); height: 245px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gv-dashboard .gv-showcase-card { transition: none; }
+}
+
+
+/* =========================================
+   GAMEVAULT — ENCERRAMENTO CINEMATOGRÁFICO
+========================================= */
+.gv-dashboard .gv-journey {
+  position: relative;
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+  min-height: 330px;
+  margin-top: clamp(64px, 8vw, 112px);
+  padding: clamp(32px, 5vw, 72px);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 22px;
+  background: #161b22;
+  color: #fff;
+}
+.gv-dashboard .gv-journey::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, #12161c 12%, rgba(18,22,28,.95) 48%, rgba(18,22,28,.25) 100%);
+}
+.gv-dashboard .gv-journey-visual {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45%;
+  background: radial-gradient(ellipse at 55% 55%, #353e4b 0%, #222a34 40%, transparent 75%);
+  color: rgba(255,255,255,.18);
+  transform: rotate(-12deg);
+}
+.gv-dashboard .gv-journey-visual svg { width: clamp(110px, 15vw, 220px); height: auto; }
+.gv-dashboard .gv-journey-content { position: relative; z-index: 1; max-width: 650px; }
+.gv-dashboard .gv-journey .gv-eyebrow { color: #b4bbc5; }
+.gv-dashboard .gv-journey h2 {
+  max-width: 650px;
+  margin: 0 0 18px;
+  font-size: clamp(2rem, 3.5vw, 3.5rem);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -.05em;
+}
+.gv-dashboard .gv-journey h2 span { color: #b2bac5; }
+.gv-dashboard .gv-journey p { max-width: 450px; margin-bottom: 26px; color: #bbc1cb; font-size: .95rem; line-height: 1.7; }
+.gv-dashboard .gv-journey button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #15171a;
+  font-size: .85rem;
+  font-weight: 700;
+  transition: transform .2s ease, background .2s ease;
+}
+.gv-dashboard .gv-journey button:hover { transform: translateY(-2px); background: #e7e8eb; }
+
+/* =========================================
+   GAMEVAULT — RODAPÉ
+========================================= */
+.gv-dashboard .gv-footer { margin-top: 70px; padding-top: 34px; border-top: 1px solid var(--border-color); }
+.gv-dashboard .gv-footer-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; padding-bottom: 38px; }
+.gv-dashboard .gv-footer-brand strong { display: block; margin-bottom: 8px; color: var(--text-primary); font-size: 1.35rem; font-weight: 800; letter-spacing: -.045em; }
+.gv-dashboard .gv-footer-brand p { color: var(--text-secondary); font-size: .83rem; line-height: 1.6; }
+.gv-dashboard .gv-footer-links { display: flex; flex-wrap: wrap; gap: 24px; }
+.gv-dashboard .gv-footer-links button { border: 0; padding: 5px 0; background: transparent; color: var(--text-secondary); font-size: .83rem; transition: color .2s ease; }
+.gv-dashboard .gv-footer-links button:hover { color: var(--text-primary); }
+.gv-dashboard .gv-footer-platforms { display: flex; align-items: center; gap: 18px; }
+.gv-dashboard .gv-platform-icon { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; opacity: .8; }
+.gv-dashboard .gv-platform-icon img { display: block; width: 23px; height: 23px; object-fit: contain; }
+.gv-dashboard .gv-footer-bottom { display: flex; justify-content: space-between; gap: 18px; padding: 20px 0 10px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: .75rem; }
+@media (max-width: 800px) {
+  .gv-dashboard .gv-footer-top { flex-wrap: wrap; }
+  .gv-dashboard .gv-footer-brand { flex-basis: 100%; }
+}
+@media (max-width: 700px) {
+  .gv-dashboard .gv-journey { min-height: 370px; padding: 30px 24px; }
+  .gv-dashboard .gv-journey-visual { opacity: .35; width: 75%; }
+  .gv-dashboard .gv-journey h2 { font-size: clamp(1.9rem, 7vw, 2.7rem); }
+  .gv-dashboard .gv-footer { margin-top: 50px; }
+  .gv-dashboard .gv-footer-top { gap: 26px; }
+  .gv-dashboard .gv-footer-bottom { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gv-dashboard .gv-journey button { transition: none; }
 }
