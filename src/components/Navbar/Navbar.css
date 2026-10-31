@@ -1,4 +1,11 @@
 
+/* =========================================================
+   GAMEVAULT — NAVBAR
+   Minimalismo premium | Glassmorphism
+   ========================================================= */
+
+/* 01. BARRA PRINCIPAL */
+
 .gv-navbar {
   position: sticky;
   top: 0;
@@ -13,42 +20,62 @@
 }
 
 .gv-navbar-inner {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+
   width: 100%;
   max-width: 1600px;
-  min-height: 72px;
+  min-height: 76px;
   margin: 0 auto;
   padding: 0 4%;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
 }
+
+/* 02. LOGOTIPO */
 
 .gv-navbar-brand {
-  flex-shrink: 0;
-  font-size: 1.65rem;
+  justify-self: start;
+
+  color: var(--text-primary);
+  font-size: 1.75rem;
   font-weight: 750;
   letter-spacing: -0.055em;
+  line-height: 1;
+
   text-decoration: none;
-  color: var(--text-primary);
+  white-space: nowrap;
 }
+
+/* 03. NAVEGAÇÃO PRINCIPAL */
 
 .gv-navbar-links {
   display: flex;
   align-items: center;
-  gap: 32px;
+  justify-content: center;
+  gap: clamp(48px, 4.5vw, 90px);
 }
 
 .gv-navbar-links a {
   position: relative;
-  padding: 25px 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 76px;
+
   color: var(--text-secondary);
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+
   text-decoration: none;
   white-space: nowrap;
-  transition: color 0.2s;
+
+  transition: color 200ms ease;
 }
 
 .gv-navbar-links a:hover,
@@ -57,240 +84,412 @@
 }
 
 .gv-navbar-links a.active::after {
-  content: '';
+  content: "";
+
   position: absolute;
-  bottom: 17px;
+  bottom: 0;
   left: 0;
   right: 0;
+
   height: 2px;
   border-radius: 2px;
+
   background: var(--text-primary);
 }
+
+/* 04. AÇÕES */
 
 .gv-navbar-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  justify-self: end;
+  gap: 16px;
+
+  min-width: 0;
 }
+
+/* 05. PESQUISA */
 
 .gv-navbar-search {
   position: relative;
-  width: 210px;
-  height: 40px;
-  padding: 0 14px;
 
   display: flex;
   align-items: center;
   gap: 10px;
 
-  border: 1px solid var(--border-color);
+  width: 195px;
+  height: 42px;
+  padding: 0 12px;
+
+  border: 1px solid transparent;
   border-radius: 999px;
+
+  background: transparent;
+  color: var(--text-primary);
+
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease;
+}
+
+.gv-navbar-search:focus-within {
   background: var(--bg-secondary);
-  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.gv-navbar-search > svg {
+  flex-shrink: 0;
 }
 
 .gv-navbar-search input {
-  width: 100%;
+  flex: 1;
   min-width: 0;
-  background: transparent;
+  width: 100%;
+
+  padding: 0;
   border: 0;
-  outline: none;
+  outline: 0;
+
+  background: transparent;
   color: var(--text-primary);
-  font-size: 0.82rem;
+
+  font: inherit;
+  font-size: 0.85rem;
 }
 
-.gv-navbar-search-results,
-.gv-navbar-notification-panel {
+.gv-navbar-search input::placeholder {
+  color: var(--text-secondary);
+}
+
+.gv-navbar-search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.gv-navbar-search-clear {
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+  padding: 3px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* 06. RESULTADOS DA PESQUISA */
+
+.gv-navbar-search-results {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
   z-index: 1100;
 
-  width: 300px;
-  max-height: 350px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  max-height: 360px;
   overflow-y: auto;
-  padding: 12px;
 
-  background: var(--bg-glass);
+  padding: 10px;
+
   border: 1px solid var(--border-color);
-  border-radius: 18px;
+  border-radius: 16px;
 
+  background: var(--bg-primary);
   box-shadow: 0 16px 40px var(--shadow-color);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+
   color: var(--text-primary);
 }
 
 .gv-navbar-search-results button {
-  width: 100%;
-  padding: 9px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
+
+  width: 100%;
+  padding: 9px;
 
   border: 0;
   border-radius: 10px;
+
   background: transparent;
   color: var(--text-primary);
+
   text-align: left;
   cursor: pointer;
+
+  transition: background-color 200ms ease;
 }
 
 .gv-navbar-search-results button:hover {
   background: var(--bg-secondary);
 }
 
+.gv-navbar-search-results img,
+.gv-navbar-result-placeholder {
+  flex-shrink: 0;
+
+  width: 40px;
+  height: 40px;
+
+  border-radius: 8px;
+}
+
 .gv-navbar-search-results img {
-  width: 38px;
-  height: 38px;
   object-fit: cover;
-  border-radius: 7px;
+}
+
+.gv-navbar-result-placeholder {
+  display: grid;
+  place-items: center;
+
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.gv-navbar-result-title {
+  min-width: 0;
+
+  font-size: 0.84rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .gv-navbar-search-results p {
-  padding: 10px;
+  margin: 0;
+  padding: 12px;
+
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
 }
 
-.gv-navbar-add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 18px;
-
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--text-primary);
-  color: var(--bg-primary);
-
-  font-size: 0.82rem;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-}
+/* 07. BOTÕES DE ÍCONE */
 
 .gv-navbar-icon,
 .gv-navbar-profile {
-  width: 40px;
-  height: 40px;
+  display: grid;
+  place-items: center;
+
   flex-shrink: 0;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
 
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
   border-radius: 50%;
+
   background: transparent;
   color: var(--text-primary);
+
   cursor: pointer;
+
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease;
 }
 
 .gv-navbar-icon:hover,
-.gv-navbar-profile:hover {
+.gv-navbar-profile:hover:not(:disabled) {
   background: var(--bg-secondary);
+  border-color: var(--border-color);
 }
 
-.gv-navbar-notifications {
+.gv-navbar-icon:active {
+  transform: scale(0.95);
+}
+
+.gv-navbar-profile:disabled {
+  opacity: 0.85;
+  cursor: default;
+}
+
+/* 08. MODO CLARO / ESCURO */
+
+.gv-navbar-theme {
+  display: grid;
+  place-items: center;
+}
+
+.gv-navbar-theme svg {
+  transition: transform 250ms ease;
+}
+
+.gv-navbar-theme:hover svg {
+  transform: rotate(15deg);
+}
+
+/* 09. CONFIGURAÇÕES */
+
+.gv-navbar-settings {
   position: relative;
 }
 
-.gv-navbar-notification-panel {
+.gv-navbar-settings-panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  z-index: 1100;
+
+  width: 270px;
+  max-width: calc(100vw - 32px);
+  padding: 10px;
+
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+
+  background: var(--bg-primary);
+  color: var(--text-primary);
+
+  box-shadow: 0 16px 40px var(--shadow-color);
+}
+
+.gv-navbar-settings-heading {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px;
+  gap: 5px;
+
+  padding: 12px 12px 14px;
+  margin-bottom: 5px;
+
+  border-bottom: 1px solid var(--border-color);
 }
 
-.gv-navbar-notification-panel strong {
-  font-size: 0.95rem;
+.gv-navbar-settings-heading strong {
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
-.gv-navbar-notification-panel p {
+.gv-navbar-settings-heading span {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.gv-navbar-settings-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--text-secondary);
-  font-size: 0.82rem;
+  gap: 12px;
+
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 12px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: transparent;
+  color: var(--text-primary);
+
+  font: inherit;
+  font-size: 0.84rem;
+  text-align: left;
+
+  cursor: pointer;
 }
 
-.gv-navbar-profile {
+.gv-navbar-settings-item:hover {
   background: var(--bg-secondary);
 }
+
+.gv-navbar-settings-item svg {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+/* 10. MENU MOBILE */
 
 .gv-navbar-menu-button {
   display: none;
 }
 
-@media (max-width: 1200px) {
-  .gv-navbar-links {
-    gap: 18px;
-  }
+/* 11. FOCO E ACESSIBILIDADE */
 
-  .gv-navbar-search {
-    width: 170px;
-  }
+.gv-navbar a:focus-visible,
+.gv-navbar button:focus-visible,
+.gv-navbar input:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 3px;
 }
 
-@media (max-width: 950px) {
-  .gv-navbar-inner {
-    flex-wrap: wrap;
-    padding: 12px 4%;
-  }
+/* 12. NOTEBOOKS E TELAS MÉDIAS */
 
+@media (max-width: 1350px) {
   .gv-navbar-links {
-    order: 3;
-    width: 100%;
-    justify-content: center;
+    gap: 40px;
   }
 
   .gv-navbar-links a {
-    padding: 10px 0;
-  }
-
-  .gv-navbar-links a.active::after {
-    bottom: 3px;
-  }
-}
-
-@media (max-width: 650px) {
-  .gv-navbar-inner {
-    gap: 12px;
-  }
-
-  .gv-navbar-brand {
-    font-size: 1.4rem;
-  }
-
-  .gv-navbar-actions {
-    gap: 6px;
+    font-size: 1rem;
   }
 
   .gv-navbar-search {
-    order: 5;
-    width: 100%;
+    width: 165px;
   }
 
-  .gv-navbar-search input {
-    width: 100%;
+  .gv-navbar-actions {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .gv-navbar-inner {
+    gap: 16px;
   }
 
-  .gv-navbar-add {
-    padding: 0 10px;
-  }
-
-  .gv-navbar-add span {
-    display: none;
+  .gv-navbar-brand {
+    font-size: 1.55rem;
   }
 
   .gv-navbar-links {
+    gap: 24px;
+  }
+
+  .gv-navbar-links a {
+    font-size: 0.94rem;
+  }
+
+  .gv-navbar-search {
+    width: 125px;
+  }
+
+  .gv-navbar-actions {
+    gap: 5px;
+  }
+
+  .gv-navbar-icon,
+  .gv-navbar-profile {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* 13. TABLETS */
+
+@media (max-width: 900px) {
+  .gv-navbar-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 14px;
+    padding: 0 4%;
+  }
+
+  .gv-navbar-links {
+    grid-column: 1 / -1;
+    grid-row: 2;
+
     display: none;
     flex-direction: column;
     align-items: stretch;
     gap: 0;
+
+    width: 100%;
+    padding: 6px 0 14px;
+
+    border-top: 1px solid var(--border-color);
   }
 
   .gv-navbar-links.is-open {
@@ -298,10 +497,130 @@
   }
 
   .gv-navbar-links a {
-    padding: 12px 8px;
+    min-height: 44px;
+    justify-content: flex-start;
+    padding: 10px 12px;
+
+    font-size: 0.98rem;
+  }
+
+  .gv-navbar-links a.active::after {
+    top: 10px;
+    bottom: 10px;
+    left: 0;
+    right: auto;
+
+    width: 2px;
+    height: auto;
+  }
+
+  .gv-navbar-actions {
+    justify-self: end;
   }
 
   .gv-navbar-menu-button {
-    display: flex;
+    display: grid;
+  }
+
+  .gv-navbar-search {
+    width: 175px;
+  }
+}
+
+/* 14. CELULARES */
+
+@media (max-width: 560px) {
+  .gv-navbar-inner {
+    min-height: 64px;
+    padding: 0 16px;
+    gap: 8px;
+  }
+
+  .gv-navbar-brand {
+    font-size: 1.4rem;
+  }
+
+  .gv-navbar-actions {
+    gap: 3px;
+  }
+
+  .gv-navbar-search {
+    width: 36px;
+    height: 36px;
+    padding: 0 8px;
+  }
+
+  .gv-navbar-search:focus-within {
+    position: absolute;
+    top: 11px;
+    left: 16px;
+    right: 16px;
+    z-index: 5;
+
+    width: auto;
+    padding: 0 12px;
+
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+
+    box-shadow: 0 4px 16px var(--shadow-color);
+  }
+
+  .gv-navbar-search input {
+    width: 0;
+    opacity: 0;
+  }
+
+  .gv-navbar-search:focus-within input {
+    width: 100%;
+    opacity: 1;
+  }
+
+  .gv-navbar-search-results {
+    width: 100%;
+    right: 0;
+  }
+
+  .gv-navbar-icon,
+  .gv-navbar-profile {
+    width: 34px;
+    height: 34px;
+  }
+
+  .gv-navbar-settings-panel {
+    right: -38px;
+  }
+}
+
+/* 15. CELULARES MUITO PEQUENOS */
+
+@media (max-width: 380px) {
+  .gv-navbar-inner {
+    padding: 0 10px;
+  }
+
+  .gv-navbar-brand {
+    font-size: 1.2rem;
+  }
+
+  .gv-navbar-actions {
+    gap: 0;
+  }
+
+  .gv-navbar-icon,
+  .gv-navbar-profile {
+    width: 31px;
+    height: 31px;
+  }
+}
+
+/* 16. MOVIMENTO REDUZIDO */
+
+@media (prefers-reduced-motion: reduce) {
+  .gv-navbar *,
+  .gv-navbar *::before,
+  .gv-navbar *::after {
+    transition: none !important;
+    animation: none !important;
   }
 }

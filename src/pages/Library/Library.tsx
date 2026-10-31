@@ -1,4 +1,4 @@
-import { ArrowRight, Clock3, Gamepad2, Heart, Plus, Search, Trophy, X } from 'lucide-react'
+import { ArrowRight, Clock3, Gamepad2, Heart, Search, Trophy, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getGameImage } from '../../data/gameImage'
@@ -70,9 +70,6 @@ function Library() {
           <h1>Todos os jogos.<br /><span>Uma história só sua.</span></h1>
           <p>Reúna suas aventuras, acompanhe suas conquistas e revisite cada capítulo da sua trajetória gamer.</p>
         </div>
-        <button type="button" className="gv-library-primary" onClick={() => navigate('/adicionar')}>
-          <Plus size={17} aria-hidden="true" /> Adicionar jogo
-        </button>
       </header>
 
       <section className="gv-library-overview" aria-label="Resumo da coleção">

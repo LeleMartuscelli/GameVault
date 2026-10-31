@@ -1,16 +1,17 @@
+
 import './Navbar.css'
-import { useEffect, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+
+import { useEffect, useRef, useState } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+
 import {
-  Bell,
-  Clock3,
   Gamepad2,
   Menu,
   Moon,
   Plus,
   Search,
+  Settings2,
   Sun,
-  Trophy,
   UserRound,
   X,
 } from 'lucide-react'
@@ -21,121 +22,224 @@ import type { Game } from '../../types/games'
 
 function Navbar() {
   const navigate = useNavigate()
+  const location = useLocation()
 
+  // TEMA
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return localStorage.getItem('gamevault-theme') === 'dark'
       ? 'dark'
       : 'light'
   })
 
+  // ESTADOS
   const [games, setGames] = useState<Game[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // REFERÊNCIAS
+  const settingsRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLDivElement>(null)
+
+  // APLICAR TEMA
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('gamevault-theme', theme)
   }, [theme])
 
+  // CARREGAR JOGOS
   useEffect(() => {
+    let active = true
+
     async function loadGames() {
       try {
         const data = await getGames()
-        setGames(data)
+
+        if (active) {
+          setGames(data)
+        }
       } catch (error) {
-        console.error('Erro ao carregar jogos da navbar:', error)
+        console.error(
+          'Erro ao carregar jogos da navbar:',
+          error
+        )
       }
     }
 
-    loadGames()
+    void loadGames()
+
+    return () => {
+      active = false
+    }
+  }, [location.pathname])
+
+  // FECHAR PAINÉIS AO CLICAR FORA OU PRESSIONAR ESC
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target
+
+      if (!(target instanceof Node)) return
+
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(target)
+      ) {
+        setSettingsOpen(false)
+      }
+
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(target)
+      ) {
+        setSearchOpen(false)
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setSettingsOpen(false)
+        setSearchOpen(false)
+        setMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener(
+        'pointerdown',
+        handlePointerDown
+      )
+
+      document.removeEventListener(
+        'keydown',
+        handleEscape
+      )
+    }
   }, [])
 
-  const searchResults = searchTerm.trim()
+  // PESQUISA
+  const normalizedSearch = searchTerm.trim().toLowerCase()
+
+  const searchResults = normalizedSearch
     ? games.filter((game) =>
-        game.title
-          .toLowerCase()
-          .includes(searchTerm.trim().toLowerCase())
+        game.title.toLowerCase().includes(normalizedSearch)
       )
     : []
 
-  const totalHours = games.reduce(
-    (total, game) => total + game.hoursPlayed,
-    0
-  )
-
-  const completedGames = games.filter(
-    (game) => game.timesCompleted > 0
-  ).length
-
+  // FUNÇÕES
   function toggleTheme() {
     setTheme((current) =>
       current === 'light' ? 'dark' : 'light'
     )
   }
 
-  function openGame(id: number) {
+  function closeMenus() {
+    setMobileMenuOpen(false)
+    setSettingsOpen(false)
+    setSearchOpen(false)
+  }
+
+  function openGame(id: Game['id']) {
     setSearchTerm('')
+    closeMenus()
     navigate(`/jogo/${id}`)
   }
 
-  function closeMobileMenu() {
-    setMobileMenuOpen(false)
+  function openAddGame() {
+    closeMenus()
+    navigate('/adicionar')
   }
 
   return (
     <header className="gv-navbar">
       <div className="gv-navbar-inner">
+
+        {/* LOGOTIPO */}
         <NavLink
           to="/"
           className="gv-navbar-brand"
-          onClick={closeMobileMenu}
+          onClick={closeMenus}
+          aria-label="GameVault — início"
         >
           GameVault
         </NavLink>
 
+        {/* NAVEGAÇÃO PRINCIPAL */}
         <nav
           className={`gv-navbar-links ${
             mobileMenuOpen ? 'is-open' : ''
           }`}
           aria-label="Navegação principal"
         >
-          <NavLink to="/" end onClick={closeMobileMenu}>
+          <NavLink
+            to="/"
+            end
+            onClick={closeMenus}
+          >
             Início
           </NavLink>
 
           <NavLink
             to="/biblioteca"
-            onClick={closeMobileMenu}
+            onClick={closeMenus}
           >
             Biblioteca
           </NavLink>
 
           <NavLink
             to="/favoritos"
-            onClick={closeMobileMenu}
+            onClick={closeMenus}
           >
             Favoritos
           </NavLink>
         </nav>
 
+        {/* AÇÕES */}
         <div className="gv-navbar-actions">
-          <div className="gv-navbar-search">
-            <Search size={18} />
+
+          {/* PESQUISA */}
+          <div
+            className="gv-navbar-search"
+            ref={searchRef}
+          >
+            <Search
+              size={20}
+              strokeWidth={1.8}
+              aria-hidden="true"
+            />
 
             <input
               type="search"
               placeholder="Buscar jogos..."
               aria-label="Buscar jogos"
               value={searchTerm}
-              onChange={(event) =>
+              onFocus={() => setSearchOpen(true)}
+              onChange={(event) => {
                 setSearchTerm(event.target.value)
-              }
+                setSearchOpen(true)
+              }}
             />
 
-            {searchTerm.trim() && (
+            {searchTerm && (
+              <button
+                type="button"
+                className="gv-navbar-search-clear"
+                aria-label="Limpar pesquisa"
+                onClick={() => {
+                  setSearchTerm('')
+                  setSearchOpen(false)
+                }}
+              >
+                <X size={15} aria-hidden="true" />
+              </button>
+            )}
+
+            {searchOpen && normalizedSearch && (
               <div className="gv-navbar-search-results">
-                {searchResults.length ? (
+                {searchResults.length > 0 ? (
                   searchResults.map((game) => {
                     const image = getGameImage(game.title)
 
@@ -146,12 +250,23 @@ function Navbar() {
                         onClick={() => openGame(game.id)}
                       >
                         {image ? (
-                          <img src={image} alt="" />
+                          <img
+                            src={image}
+                            alt=""
+                            loading="lazy"
+                          />
                         ) : (
-                          <Gamepad2 size={20} />
+                          <span className="gv-navbar-result-placeholder">
+                            <Gamepad2
+                              size={18}
+                              aria-hidden="true"
+                            />
+                          </span>
                         )}
 
-                        <span>{game.title}</span>
+                        <span className="gv-navbar-result-title">
+                          {game.title}
+                        </span>
                       </button>
                     )
                   })
@@ -162,18 +277,10 @@ function Navbar() {
             )}
           </div>
 
+          {/* BOTÃO MODO CLARO / ESCURO */}
           <button
             type="button"
-            className="gv-navbar-add"
-            onClick={() => navigate('/adicionar')}
-          >
-            <Plus size={18} />
-            <span>Adicionar jogo</span>
-          </button>
-
-          <button
-            type="button"
-            className="gv-navbar-icon"
+            className="gv-navbar-icon gv-navbar-theme"
             onClick={toggleTheme}
             aria-label={
               theme === 'light'
@@ -182,76 +289,135 @@ function Navbar() {
             }
             title={
               theme === 'light'
-                ? 'Modo escuro'
-                : 'Modo claro'
+                ? 'Ativar modo escuro'
+                : 'Ativar modo claro'
             }
           >
             {theme === 'light' ? (
-              <Moon size={20} />
+              <Moon
+                size={21}
+                strokeWidth={1.8}
+                aria-hidden="true"
+              />
             ) : (
-              <Sun size={20} />
+              <Sun
+                size={21}
+                strokeWidth={1.8}
+                aria-hidden="true"
+              />
             )}
           </button>
 
-          <div className="gv-navbar-notifications">
+          {/* CONFIGURAÇÕES */}
+          <div
+            className="gv-navbar-settings"
+            ref={settingsRef}
+          >
             <button
               type="button"
               className="gv-navbar-icon"
-              aria-label="Notificações"
-              aria-expanded={notificationsOpen}
-              onClick={() =>
-                setNotificationsOpen((open) => !open)
-              }
+              aria-label="Configurações"
+              title="Configurações"
+              aria-expanded={settingsOpen}
+              aria-controls="gv-navbar-settings-menu"
+              onClick={() => {
+                setSettingsOpen((open) => !open)
+                setSearchOpen(false)
+              }}
             >
-              <Bell size={20} />
+              <Settings2
+                size={21}
+                strokeWidth={1.8}
+                aria-hidden="true"
+              />
             </button>
 
-            {notificationsOpen && (
-              <div className="gv-navbar-notification-panel">
-                <strong>Notificações</strong>
+            {settingsOpen && (
+              <div
+                id="gv-navbar-settings-menu"
+                className="gv-navbar-settings-panel"
+              >
+                <div className="gv-navbar-settings-heading">
+                  <strong>Configurações</strong>
+                  <span>Personalize sua experiência</span>
+                </div>
 
-                <p>
-                  <Gamepad2 size={16} />
-                  {games.length} jogos cadastrados
-                </p>
+                <button
+                  type="button"
+                  className="gv-navbar-settings-item"
+                  onClick={openAddGame}
+                >
+                  <Plus
+                    size={18}
+                    aria-hidden="true"
+                  />
 
-                <p>
-                  <Clock3 size={16} />
-                  {totalHours.toLocaleString('pt-BR')}h jogadas
-                </p>
+                  <span>Adicionar jogo</span>
+                </button>
 
-                <p>
-                  <Trophy size={16} />
-                  {completedGames} jogos zerados
-                </p>
+                <button
+                  type="button"
+                  className="gv-navbar-settings-item"
+                  onClick={toggleTheme}
+                >
+                  {theme === 'light' ? (
+                    <Moon
+                      size={18}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Sun
+                      size={18}
+                      aria-hidden="true"
+                    />
+                  )}
+
+                  <span>
+                    {theme === 'light'
+                      ? 'Ativar modo escuro'
+                      : 'Ativar modo claro'}
+                  </span>
+                </button>
               </div>
             )}
           </div>
 
+          {/* PERFIL */}
           <button
             type="button"
             className="gv-navbar-profile"
-            aria-label="Perfil (em desenvolvimento)"
+            aria-label="Perfil — em desenvolvimento"
             title="Perfil em desenvolvimento"
+            disabled
           >
-            <UserRound size={21} />
+            <UserRound
+              size={21}
+              strokeWidth={1.8}
+              aria-hidden="true"
+            />
           </button>
 
+          {/* MENU MOBILE */}
           <button
             type="button"
             className="gv-navbar-icon gv-navbar-menu-button"
-            aria-label="Abrir menu"
-            aria-expanded={mobileMenuOpen}
-            onClick={() =>
-              setMobileMenuOpen((open) => !open)
+            aria-label={
+              mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'
             }
+            aria-expanded={mobileMenuOpen}
+            onClick={() => {
+              setMobileMenuOpen((open) => !open)
+              setSettingsOpen(false)
+              setSearchOpen(false)
+            }}
           >
             {mobileMenuOpen ? (
-              <X size={22} />
+              <X size={22} aria-hidden="true" />
             ) : (
-              <Menu size={22} />
+              <Menu size={22} aria-hidden="true" />
             )}
           </button>
+
         </div>
       </div>
     </header>
