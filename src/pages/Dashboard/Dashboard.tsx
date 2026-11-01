@@ -1,4 +1,3 @@
-
 import {
   ArrowRight,
   ChevronLeft,
@@ -281,45 +280,52 @@ function Dashboard() {
               {recentGames.map((game, index) => {
                 const gameImage = getGameImage(game.title)
                 const position = getCardPosition(index)
-                const isActive = position === 'active'
+                const isHidden = position === 'hidden'
+
+                const openGame = () => navigate(`/jogo/${game.id}`)
 
                 return (
                   <article
                     key={game.id}
                     className={`gv-showcase-card gv-showcase-${position}`}
-                    aria-hidden={position === 'hidden'}
+                    role="link"
+                    aria-label={`Ver detalhes de ${game.title}`}
+                    aria-hidden={isHidden}
+                    tabIndex={isHidden ? -1 : 0}
+                    onClick={isHidden ? undefined : openGame}
+                    onKeyDown={(event) => {
+                      if (isHidden) return
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        openGame()
+                      }
+                    }}
                   >
                     <div className="gv-showcase-image">
                       {gameImage ? (
-                        <img src={gameImage} alt="" />
+                        <img src={gameImage} alt="" loading="lazy" />
                       ) : (
                         <div className="gv-showcase-placeholder">
-                          <Gamepad2 size={34} />
+                          <Gamepad2 size={40} strokeWidth={1.3} />
                         </div>
                       )}
                     </div>
-
-                    <div className="gv-showcase-gradient" />
-
+                    <div className="gv-showcase-gradient" aria-hidden="true" />
                     <div className="gv-showcase-content">
+                      <span className="gv-showcase-platform">{game.platform}</span>
                       <h3>{game.title}</h3>
-
-                      <span className="gv-showcase-platform">
-                        {game.platform}
+                      <span className="gv-showcase-open">
+                        Ver detalhes <ArrowRight size={15} />
                       </span>
                     </div>
-
                     <div className="gv-showcase-stats">
                       <div>
                         <Clock3 size={16} />
                         <span>
-                          <strong>
-                            {game.hoursPlayed.toLocaleString('pt-BR')}h
-                          </strong>
+                          <strong>{game.hoursPlayed.toLocaleString('pt-BR')}h</strong>
                           <small>Horas jogadas</small>
                         </span>
                       </div>
-
                       <div>
                         <Trophy size={16} />
                         <span>
@@ -327,7 +333,6 @@ function Dashboard() {
                           <small>Vezes zerado</small>
                         </span>
                       </div>
-
                       <div>
                         <Medal size={16} />
                         <span>
@@ -335,18 +340,9 @@ function Dashboard() {
                           <small>Conquistas</small>
                         </span>
                       </div>
-
-                      <button
-                        type="button"
-                        className="gv-showcase-details"
-                        aria-label={`Ver detalhes de ${game.title}`}
-                        tabIndex={isActive ? 0 : -1}
-                        onClick={() =>
-                          navigate(`/jogo/${game.id}`)
-                        }
-                      >
+                      <span className="gv-showcase-details" aria-hidden="true">
                         <ChevronRight size={21} />
-                      </button>
+                      </span>
                     </div>
                   </article>
                 )
