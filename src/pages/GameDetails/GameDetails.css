@@ -1,47 +1,881 @@
-/* GameVault — Detalhes do jogo | identidade premium */
-.gv-detail-page{width:100%;max-width:1440px;margin:0 auto;padding:8px 0 72px;color:var(--text-primary,#111)}
-.gv-detail-page *{box-sizing:border-box}
-.gv-detail-topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
-.gv-detail-back{display:inline-flex;align-items:center;gap:9px;border:0;background:transparent;color:var(--text-secondary,#777);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:10px 0;transition:color .2s}
-.gv-detail-back:hover{color:var(--text-primary,#111)}
-.gv-detail-breadcrumb,.gv-detail-eyebrow,.gv-detail-kicker{font-size:10px;font-weight:700;letter-spacing:.19em}
-.gv-detail-breadcrumb{color:var(--text-secondary,#777)}
-.gv-detail-hero{height:clamp(360px,43vw,570px);position:relative;overflow:hidden;border-radius:22px;background:#171a20;isolation:isolate}
-.gv-detail-hero-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%}
-.gv-detail-hero-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#666b76;background:radial-gradient(ellipse at 70% 20%,#343b49 0%,#191d25 45%,#111319 100%)}
-.gv-detail-hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,9,13,.85),rgba(7,9,13,.35) 62%,rgba(7,9,13,.12)),linear-gradient(0deg,rgba(7,9,13,.75),transparent 55%)}
-.gv-detail-hero-content{position:absolute;bottom:clamp(28px,5vw,65px);left:clamp(25px,5vw,70px);right:24px;color:#fff;max-width:760px}
-.gv-detail-eyebrow{color:rgba(255,255,255,.76)}
-.gv-detail-hero h1{font-size:clamp(38px,6.4vw,88px);font-weight:700;line-height:1.02;letter-spacing:-.065em;margin:18px 0 24px;text-wrap:balance}
-.gv-detail-tags{display:flex;flex-wrap:wrap;gap:9px}
-.gv-detail-tags span{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:rgba(255,255,255,.10);color:#fff;font-size:12px;backdrop-filter:blur(12px)}
-.gv-detail-intro{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:58px 0 34px}
-.gv-detail-kicker{color:var(--text-secondary,#777)}
-.gv-detail-intro h2,.gv-detail-management h2{font-size:clamp(27px,3.3vw,43px);line-height:1.12;letter-spacing:-.055em;font-weight:650;margin:13px 0 12px}
-.gv-detail-intro p,.gv-detail-management p{max-width:610px;font-size:14px;line-height:1.8;color:var(--text-secondary,#777);margin:0}
-.gv-detail-favorite,.gv-detail-primary,.gv-detail-danger{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:45px;padding:12px 18px;border-radius:10px;font:inherit;font-size:13px;font-weight:650;cursor:pointer;transition:transform .2s,background .2s,color .2s,border-color .2s;white-space:nowrap}
-.gv-detail-favorite{background:var(--bg-secondary,#f5f5f7);color:var(--text-primary,#111);border:1px solid var(--border-color,rgba(0,0,0,.08))}
-.gv-detail-favorite.is-active{color:#d44b59}
-.gv-detail-favorite:hover,.gv-detail-primary:hover,.gv-detail-danger:hover{transform:translateY(-2px)}
-.gv-detail-favorite:disabled,.gv-detail-primary:disabled,.gv-detail-danger:disabled{opacity:.55;cursor:wait;transform:none}
-.gv-detail-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--border-color,rgba(0,0,0,.08));border-radius:18px;overflow:hidden;background:var(--bg-secondary,#f5f5f7)}
-.gv-detail-stat{min-width:0;padding:clamp(24px,3.2vw,42px);display:flex;flex-direction:column;align-items:flex-start}
-.gv-detail-stat+.gv-detail-stat{border-left:1px solid var(--border-color,rgba(0,0,0,.08))}
-.gv-detail-stat>svg{color:var(--text-secondary,#777);margin-bottom:24px}
-.gv-detail-stat>span{color:var(--text-secondary,#777);font-size:10px;font-weight:700;letter-spacing:.16em}
-.gv-detail-stat strong{font-size:clamp(34px,4.2vw,58px);font-weight:650;letter-spacing:-.07em;line-height:1.1;margin:12px 0 8px;font-variant-numeric:tabular-nums}
-.gv-detail-stat strong small{font-size:.43em;margin-left:4px;letter-spacing:0}
-.gv-detail-stat p{font-size:12px;color:var(--text-secondary,#777);margin:0;line-height:1.5}
-.gv-detail-management{display:flex;justify-content:space-between;align-items:center;gap:32px;margin-top:70px;padding:34px 0;border-top:1px solid var(--border-color,rgba(0,0,0,.08))}
-.gv-detail-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.gv-detail-primary{background:var(--text-primary,#111);color:var(--bg-primary,#fff);border:1px solid transparent}
-.gv-detail-danger{background:transparent;color:#cf4856;border:1px solid var(--border-color,rgba(0,0,0,.08))}
-.gv-detail-danger:hover{background:rgba(207,72,86,.06);border-color:rgba(207,72,86,.35)}
-.gv-detail-error{padding:14px 16px;border-radius:10px;background:rgba(207,72,86,.08);color:#cf4856;font-size:13px;margin:18px 0 0}
-.gv-detail-feedback{min-height:390px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 24px;border:1px solid var(--border-color,rgba(0,0,0,.08));background:var(--bg-secondary,#f5f5f7);border-radius:20px;margin-top:24px}
-.gv-detail-feedback>svg{color:var(--text-secondary,#777);margin-bottom:20px}
-.gv-detail-feedback h1{font-size:clamp(26px,3vw,38px);letter-spacing:-.05em;margin:0 0 12px}
-.gv-detail-feedback p{color:var(--text-secondary,#777);font-size:14px;margin:0 0 25px}
-@media(max-width:900px){.gv-detail-intro,.gv-detail-management{align-items:flex-start;flex-direction:column}.gv-detail-management{margin-top:48px}.gv-detail-intro{padding-top:40px}}
-@media(max-width:650px){.gv-detail-page{padding-bottom:40px}.gv-detail-breadcrumb{display:none}.gv-detail-hero{height:420px;border-radius:16px}.gv-detail-hero-shade{background:linear-gradient(0deg,rgba(7,9,13,.9),rgba(7,9,13,.05) 90%)}.gv-detail-hero-content{left:24px;bottom:30px}.gv-detail-hero h1{font-size:clamp(34px,9vw,54px)}.gv-detail-stats{grid-template-columns:1fr}.gv-detail-stat{padding:24px}.gv-detail-stat+.gv-detail-stat{border-left:0;border-top:1px solid var(--border-color,rgba(0,0,0,.08))}.gv-detail-stat>svg{margin-bottom:14px}.gv-detail-stat strong{margin:8px 0}.gv-detail-actions{width:100%}.gv-detail-actions button{flex:1;white-space:normal}.gv-detail-intro{padding-top:34px}}
-@media(prefers-reduced-motion:reduce){.gv-detail-page button{transition:none}}
+
+/* =========================================================
+   GAMEVAULT — GAME DETAILS
+   Identidade premium | Cinematic editorial
+   ========================================================= */
+
+/* 01. ESTRUTURA PRINCIPAL */
+
+.gv-detail-page {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 8px 0 72px;
+
+  color: var(--text-primary);
+}
+
+.gv-detail-page * {
+  box-sizing: border-box;
+}
+
+/* 02. NAVEGAÇÃO SUPERIOR */
+
+.gv-detail-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  margin-bottom: 26px;
+}
+
+.gv-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 0;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--text-secondary);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    color 200ms ease,
+    gap 200ms ease;
+}
+
+.gv-detail-back:hover {
+  color: var(--text-primary);
+  gap: 14px;
+}
+
+.gv-detail-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+
+  color: var(--text-secondary);
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.gv-detail-breadcrumb-separator {
+  opacity: 0.35;
+}
+
+/* 03. HERO CINEMATOGRÁFICO */
+
+.gv-detail-hero {
+  position: relative;
+  isolation: isolate;
+
+  width: 100%;
+  height: clamp(420px, 45vw, 630px);
+
+  overflow: hidden;
+  border-radius: 22px;
+
+  background: #151820;
+}
+
+.gv-detail-hero-image {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center 38%;
+}
+
+.gv-detail-hero-placeholder {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      ellipse at 70% 20%,
+      #343b49 0%,
+      #191d25 45%,
+      #111319 100%
+    );
+
+  color: #656d7b;
+}
+
+.gv-detail-hero-shade {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(5, 7, 11, 0.86) 0%,
+      rgba(5, 7, 11, 0.48) 44%,
+      rgba(5, 7, 11, 0.08) 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(5, 7, 11, 0.84) 0%,
+      rgba(5, 7, 11, 0.10) 55%,
+      transparent 100%
+    );
+}
+
+.gv-detail-hero-content {
+  position: absolute;
+  left: clamp(28px, 5.5vw, 78px);
+  right: clamp(28px, 5vw, 72px);
+  bottom: clamp(30px, 5vw, 68px);
+
+  z-index: 1;
+
+  color: #fff;
+}
+
+.gv-detail-hero-topline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gv-detail-hero-line {
+  display: block;
+
+  width: 28px;
+  height: 1px;
+
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.gv-detail-eyebrow {
+  color: rgba(255, 255, 255, 0.76);
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+}
+
+.gv-detail-hero h1 {
+  max-width: 1050px;
+
+  margin: 20px 0 30px;
+
+  font-size: clamp(42px, 6.4vw, 94px);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.065em;
+
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.gv-detail-hero-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.gv-detail-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.gv-detail-tags > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  min-height: 37px;
+  padding: 9px 14px;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.11);
+
+  color: #fff;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.gv-detail-status-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+  background: #d5e4d0;
+}
+
+.gv-detail-hero-caption {
+  flex-shrink: 0;
+
+  color: rgba(255, 255, 255, 0.56);
+
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: right;
+}
+
+/* 04. INTRODUÇÃO */
+
+.gv-detail-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 36px;
+
+  padding: 76px 0 72px;
+}
+
+.gv-detail-intro-copy {
+  max-width: 690px;
+}
+
+.gv-detail-kicker {
+  display: inline-block;
+
+  color: var(--text-secondary);
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.19em;
+}
+
+.gv-detail-intro h2 {
+  margin: 18px 0 22px;
+
+  font-size: clamp(36px, 4.5vw, 62px);
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: -0.065em;
+}
+
+.gv-detail-intro p {
+  max-width: 550px;
+  margin: 0;
+
+  color: var(--text-secondary);
+
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+/* 05. FAVORITOS */
+
+.gv-detail-favorite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+
+  flex-shrink: 0;
+
+  min-height: 48px;
+  padding: 13px 19px;
+
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    transform 200ms ease,
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease;
+}
+
+.gv-detail-favorite:hover {
+  transform: translateY(-2px);
+}
+
+.gv-detail-favorite.is-active {
+  color: #d44b59;
+  border-color: rgba(212, 75, 89, 0.25);
+}
+
+.gv-detail-favorite:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+}
+
+/* 06. CABEÇALHO DAS ESTATÍSTICAS */
+
+.gv-detail-stats-section {
+  width: 100%;
+}
+
+.gv-detail-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+
+  margin-bottom: 26px;
+}
+
+.gv-detail-section-heading h2 {
+  margin: 13px 0 0;
+
+  font-size: clamp(26px, 3.2vw, 42px);
+  font-weight: 650;
+  line-height: 1.12;
+  letter-spacing: -0.055em;
+}
+
+.gv-detail-section-index {
+  color: var(--text-secondary);
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+
+  white-space: nowrap;
+}
+
+/* 07. CARDS DE ESTATÍSTICAS */
+
+.gv-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  overflow: hidden;
+
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+
+  background: var(--bg-secondary);
+}
+
+.gv-detail-stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  min-width: 0;
+  min-height: 275px;
+
+  padding: clamp(26px, 3.5vw, 48px);
+}
+
+.gv-detail-stat + .gv-detail-stat {
+  border-left: 1px solid var(--border-color);
+}
+
+.gv-detail-stat-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+
+  color: var(--text-secondary);
+}
+
+.gv-detail-stat-top > span {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+}
+
+.gv-detail-stat-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  margin-top: 32px;
+}
+
+.gv-detail-stat-label {
+  color: var(--text-secondary);
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.gv-detail-stat strong {
+  margin: 13px 0 10px;
+
+  color: var(--text-primary);
+
+  font-size: clamp(42px, 4.8vw, 72px);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.075em;
+
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.gv-detail-stat strong small {
+  margin-left: 5px;
+
+  font-size: 0.38em;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.gv-detail-stat p {
+  margin: 0;
+
+  color: var(--text-secondary);
+
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* 08. GERENCIAMENTO */
+
+.gv-detail-management {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 36px;
+
+  margin-top: 96px;
+  padding: 44px 0 72px;
+
+  border-top: 1px solid var(--border-color);
+}
+
+.gv-detail-management-copy {
+  max-width: 570px;
+}
+
+.gv-detail-management h2 {
+  margin: 15px 0 16px;
+
+  font-size: clamp(30px, 3.5vw, 48px);
+  font-weight: 650;
+  line-height: 1.12;
+  letter-spacing: -0.055em;
+}
+
+.gv-detail-management p {
+  max-width: 500px;
+  margin: 0;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.gv-detail-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* 09. BOTÕES DE AÇÃO */
+
+.gv-detail-primary,
+.gv-detail-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+
+  min-height: 48px;
+  padding: 13px 20px;
+
+  border-radius: 10px;
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    transform 200ms ease,
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease;
+}
+
+.gv-detail-primary {
+  border: 1px solid transparent;
+
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.gv-detail-primary:hover {
+  transform: translateY(-2px);
+}
+
+.gv-detail-danger {
+  border: 1px solid var(--border-color);
+
+  background: transparent;
+  color: #cf4856;
+}
+
+.gv-detail-danger:hover {
+  transform: translateY(-2px);
+
+  background: rgba(207, 72, 86, 0.06);
+  border-color: rgba(207, 72, 86, 0.35);
+}
+
+.gv-detail-primary:disabled,
+.gv-detail-danger:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+}
+
+/* 10. ERROS */
+
+.gv-detail-error {
+  margin: 0 0 28px;
+  padding: 15px 18px;
+
+  border: 1px solid rgba(207, 72, 86, 0.15);
+  border-radius: 12px;
+
+  background: rgba(207, 72, 86, 0.08);
+  color: #cf4856;
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 11. CARREGAMENTO E JOGO INDISPONÍVEL */
+
+.gv-detail-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 450px;
+  margin-top: 24px;
+  padding: 50px 24px;
+
+  border: 1px solid var(--border-color);
+  border-radius: 22px;
+
+  background: var(--bg-secondary);
+
+  text-align: center;
+}
+
+.gv-detail-feedback-icon {
+  display: grid;
+  place-items: center;
+
+  width: 72px;
+  height: 72px;
+
+  margin-bottom: 24px;
+
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+}
+
+.gv-detail-feedback h1 {
+  margin: 15px 0 14px;
+
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 650;
+  letter-spacing: -0.055em;
+}
+
+.gv-detail-feedback p {
+  max-width: 440px;
+  margin: 0 0 26px;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* 12. ASSINATURA */
+
+.gv-detail-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding-top: 24px;
+
+  border-top: 1px solid var(--border-color);
+}
+
+.gv-detail-footer span:first-child {
+  color: var(--text-primary);
+
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: -0.045em;
+}
+
+.gv-detail-footer span:last-child {
+  color: var(--text-secondary);
+
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-align: right;
+}
+
+/* 13. FOCO E ACESSIBILIDADE */
+
+.gv-detail-page button:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 4px;
+}
+
+/* 14. TABLETS */
+
+@media (max-width: 1000px) {
+  .gv-detail-intro {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .gv-detail-management {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .gv-detail-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .gv-detail-stat {
+    min-height: 245px;
+    padding: 25px;
+  }
+
+  .gv-detail-stat strong {
+    font-size: clamp(34px, 5vw, 56px);
+  }
+}
+
+/* 15. CELULARES */
+
+@media (max-width: 650px) {
+  .gv-detail-page {
+    padding-bottom: 40px;
+  }
+
+  .gv-detail-topbar {
+    margin-bottom: 16px;
+  }
+
+  .gv-detail-breadcrumb {
+    display: none;
+  }
+
+  .gv-detail-hero {
+    height: 490px;
+    border-radius: 16px;
+  }
+
+  .gv-detail-hero-image {
+    object-position: center;
+  }
+
+  .gv-detail-hero-shade {
+    background:
+      linear-gradient(
+        0deg,
+        rgba(5, 7, 11, 0.94) 0%,
+        rgba(5, 7, 11, 0.55) 42%,
+        rgba(5, 7, 11, 0.04) 100%
+      );
+  }
+
+  .gv-detail-hero-content {
+    left: 24px;
+    right: 24px;
+    bottom: 30px;
+  }
+
+  .gv-detail-hero h1 {
+    margin: 16px 0 24px;
+
+    font-size: clamp(38px, 9vw, 58px);
+  }
+
+  .gv-detail-hero-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .gv-detail-hero-caption {
+    font-size: 8px;
+    text-align: left;
+  }
+
+  .gv-detail-tags > span {
+    padding: 8px 11px;
+    font-size: 11px;
+  }
+
+  .gv-detail-intro {
+    gap: 28px;
+    padding: 48px 0 60px;
+  }
+
+  .gv-detail-intro h2 {
+    font-size: clamp(36px, 9vw, 48px);
+  }
+
+  .gv-detail-intro p {
+    font-size: 14px;
+  }
+
+  .gv-detail-favorite {
+    width: 100%;
+  }
+
+  .gv-detail-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .gv-detail-section-index {
+    display: none;
+  }
+
+  .gv-detail-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .gv-detail-stat {
+    min-height: 190px;
+    padding: 28px;
+  }
+
+  .gv-detail-stat + .gv-detail-stat {
+    border-left: 0;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .gv-detail-stat-content {
+    margin-top: 24px;
+  }
+
+  .gv-detail-stat strong {
+    font-size: 54px;
+  }
+
+  .gv-detail-management {
+    margin-top: 68px;
+    padding: 36px 0 50px;
+  }
+
+  .gv-detail-management h2 {
+    font-size: 36px;
+  }
+
+  .gv-detail-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .gv-detail-actions button {
+    width: 100%;
+    white-space: normal;
+  }
+
+  .gv-detail-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .gv-detail-footer span:last-child {
+    text-align: left;
+  }
+
+  .gv-detail-feedback {
+    min-height: 380px;
+  }
+}
+
+/* 16. CELULARES PEQUENOS */
+
+@media (max-width: 380px) {
+  .gv-detail-hero {
+    height: 450px;
+  }
+
+  .gv-detail-hero-content {
+    left: 18px;
+    right: 18px;
+    bottom: 24px;
+  }
+
+  .gv-detail-hero h1 {
+    font-size: 35px;
+  }
+
+  .gv-detail-stat {
+    padding: 24px;
+  }
+
+  .gv-detail-stat strong {
+    font-size: 46px;
+  }
+}
+
+/* 17. MOVIMENTO REDUZIDO */
+
+@media (prefers-reduced-motion: reduce) {
+  .gv-detail-page *,
+  .gv-detail-page *::before,
+  .gv-detail-page *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
