@@ -3,7 +3,7 @@ import cs2Image from '../assets/games/counter-strike-2.jpg'
 import tlouImage from '../assets/games/the-last-of-us-part-ii.jpg'
 import arcRaidersImage from '../assets/games/arc-raiders.jpg'
 import gtaVImage from '../assets/games/grand-theft-auto-v.jpg'
-import mw4Image from '../assets/games/call-of-duty-modern-warfare-4.jpg'
+import mw4Image from '../assets/games/Modern-Warfare-4.jpg'
 
 export function getGameImage(title: string) {
   switch (title) {
