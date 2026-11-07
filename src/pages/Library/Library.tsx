@@ -1,15 +1,20 @@
 import { ArrowRight, Clock3, Gamepad2, Heart, Search, Trophy, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getGameImage } from '../../data/gameImage'
 import { getGames, updateGame } from '../../services/gameApi'
 import type { Game } from '../../types/games'
 import './Library.css'
 
+type SortOption = 'title-asc' | 'title-desc' | 'hours-desc' | 'hours-asc'
+
 function Library() {
   const navigate = useNavigate()
   const [games, setGames] = useState<Game[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [platformFilter, setPlatformFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [sortOption, setSortOption] = useState<SortOption>('title-asc')
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [updatingFavoriteId, setUpdatingFavoriteId] = useState<Game['id'] | null>(null)
@@ -34,11 +39,47 @@ function Library() {
     return () => { active = false }
   }, [])
 
-  const filteredGames = games.filter((game) =>
-    game.title.toLocaleLowerCase('pt-BR').includes(searchTerm.trim().toLocaleLowerCase('pt-BR'))
+  const platforms = useMemo(() =>
+    Array.from(new Set(games.map((game) => game.platform).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    [games]
   )
+
+  const statuses = useMemo(() =>
+    Array.from(new Set(games.map((game) => game.status).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    [games]
+  )
+
+  const filteredGames = useMemo(() => {
+    const term = searchTerm.trim().toLocaleLowerCase('pt-BR')
+    const result = games.filter((game) => {
+      const matchesTitle = game.title.toLocaleLowerCase('pt-BR').includes(term)
+      const matchesPlatform = platformFilter === 'all' || game.platform === platformFilter
+      const matchesStatus = statusFilter === 'all' || game.status === statusFilter
+      return matchesTitle && matchesPlatform && matchesStatus
+    })
+
+    return result.sort((a, b) => {
+      switch (sortOption) {
+        case 'title-desc': return b.title.localeCompare(a.title, 'pt-BR')
+        case 'hours-desc': return b.hoursPlayed - a.hoursPlayed
+        case 'hours-asc': return a.hoursPlayed - b.hoursPlayed
+        default: return a.title.localeCompare(b.title, 'pt-BR')
+      }
+    })
+  }, [games, searchTerm, platformFilter, statusFilter, sortOption])
+
   const totalHours = games.reduce((sum, game) => sum + game.hoursPlayed, 0)
   const favoriteCount = games.filter((game) => game.favorite).length
+  const hasActiveFilters = searchTerm.trim() !== '' || platformFilter !== 'all' || statusFilter !== 'all' || sortOption !== 'title-asc'
+
+  function clearFilters() {
+    setSearchTerm('')
+    setPlatformFilter('all')
+    setStatusFilter('all')
+    setSortOption('title-asc')
+  }
 
   async function handleToggleFavorite(game: Game) {
     if (updatingFavoriteId !== null) return
@@ -88,6 +129,38 @@ function Library() {
           </div>
         </div>
 
+        {!loading && !loadError && games.length > 0 && (
+          <div className="gv-library-filter-bar" aria-label="Filtros e ordenação da biblioteca">
+            <label className="gv-library-filter-field">
+              <span>Plataforma</span>
+              <select value={platformFilter} onChange={(event) => setPlatformFilter(event.target.value)}>
+                <option value="all">Todas as plataformas</option>
+                {platforms.map((platform) => <option key={platform} value={platform}>{platform}</option>)}
+              </select>
+            </label>
+            <label className="gv-library-filter-field">
+              <span>Status</span>
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                <option value="all">Todos os status</option>
+                {statuses.map((status) => <option key={status} value={status}>{status}</option>)}
+              </select>
+            </label>
+            <label className="gv-library-filter-field">
+              <span>Ordenar por</span>
+              <select value={sortOption} onChange={(event) => setSortOption(event.target.value as SortOption)}>
+                <option value="title-asc">Nome: A–Z</option>
+                <option value="title-desc">Nome: Z–A</option>
+                <option value="hours-desc">Mais horas jogadas</option>
+                <option value="hours-asc">Menos horas jogadas</option>
+              </select>
+            </label>
+            <div className="gv-library-filter-summary" role="status">
+              <span>{filteredGames.length} {filteredGames.length === 1 ? 'jogo encontrado' : 'jogos encontrados'}</span>
+              {hasActiveFilters && <button type="button" onClick={clearFilters}>Limpar filtros <X size={14} aria-hidden="true" /></button>}
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="gv-library-empty" role="status"><Gamepad2 size={28} /><h3>Carregando sua coleção...</h3><p>Estamos buscando os jogos da sua biblioteca.</p></div>
         ) : loadError ? (
@@ -95,7 +168,7 @@ function Library() {
         ) : games.length === 0 ? (
           <div className="gv-library-empty"><Gamepad2 size={28} /><h3>Sua história começa aqui.</h3><p>Adicione seu primeiro jogo para construir sua coleção pessoal.</p><button type="button" className="gv-library-primary" onClick={() => navigate('/adicionar')}>Adicionar primeiro jogo <ArrowRight size={16} /></button></div>
         ) : filteredGames.length === 0 ? (
-          <div className="gv-library-empty"><Search size={28} /><h3>Nenhum jogo encontrado</h3><p>Não encontramos títulos correspondentes a “{searchTerm}”.</p><button type="button" className="gv-library-secondary" onClick={() => setSearchTerm('')}>Limpar busca</button></div>
+          <div className="gv-library-empty"><Search size={28} /><h3>Nenhum jogo encontrado</h3><p>Não há jogos que correspondam aos filtros selecionados.</p><button type="button" className="gv-library-secondary" onClick={clearFilters}>Limpar filtros</button></div>
         ) : (
           <div className="gv-library-grid">
             {filteredGames.map((game) => {
