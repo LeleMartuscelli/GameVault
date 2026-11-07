@@ -743,3 +743,69 @@
     animation: none !important;
   }
 }
+
+/* 22. FILTROS E ORDENAÇÃO — AC3 */
+.gv-library-filter-bar {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0 0 24px;
+  padding: 18px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.gv-library-filter-field {
+  display: flex;
+  flex: 1 1 170px;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+.gv-library-filter-field > span {
+  font-size: 0.74rem;
+  font-weight: 650;
+  color: var(--text-secondary);
+}
+.gv-library-filter-field select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.83rem;
+  cursor: pointer;
+}
+.gv-library-filter-field select:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+.gv-library-filter-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1 1 100%;
+  gap: 12px;
+  padding-top: 4px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+.gv-library .gv-library-filter-summary button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-weight: 650;
+}
+@media (max-width: 500px) {
+  .gv-library-filter-bar { padding: 14px; gap: 12px; }
+  .gv-library-filter-field { flex-basis: 100%; }
+}
