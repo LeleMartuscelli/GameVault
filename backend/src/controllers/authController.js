@@ -1,4 +1,3 @@
-
 const argon2 = require('argon2')
 const crypto = require('node:crypto')
 
