@@ -6,6 +6,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
 import {
   Gamepad2,
+  LogOut,
   Menu,
   Moon,
   Plus,
@@ -16,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 
+import { useAuth } from '../../contexts/useAuth'
 import { getGameImage } from '../../data/gameImage'
 import { getGames } from '../../services/gameApi'
 import type { Game } from '../../types/games'
@@ -23,6 +25,8 @@ import type { Game } from '../../types/games'
 function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
+
+  const { isAdmin, loading, logout } = useAuth()
 
   // TEMA
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -37,6 +41,7 @@ function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   // REFERÊNCIAS
   const settingsRef = useRef<HTMLDivElement>(null)
@@ -60,10 +65,7 @@ function Navbar() {
           setGames(data)
         }
       } catch (error) {
-        console.error(
-          'Erro ao carregar jogos da navbar:',
-          error
-        )
+        console.error('Erro ao carregar jogos da navbar:', error)
       }
     }
 
@@ -149,8 +151,39 @@ function Navbar() {
   }
 
   function openAddGame() {
+    if (loading || !isAdmin) return
+
     closeMenus()
     navigate('/adicionar')
+  }
+
+  function handleProfileClick() {
+    closeMenus()
+
+    if (loading) return
+
+    if (isAdmin) {
+      setSettingsOpen(true)
+    } else {
+      navigate('/login')
+    }
+  }
+
+  async function handleLogout() {
+    if (loggingOut || loading || !isAdmin) return
+
+    setLoggingOut(true)
+
+    try {
+      await logout()
+      closeMenus()
+      navigate('/')
+    } catch (error) {
+      console.error('Erro ao encerrar sessão:', error)
+      window.alert('Não foi possível encerrar a sessão.')
+    } finally {
+      setLoggingOut(false)
+    }
   }
 
   return (
@@ -342,19 +375,23 @@ function Navbar() {
                   <span>Personalize sua experiência</span>
                 </div>
 
-                <button
-                  type="button"
-                  className="gv-navbar-settings-item"
-                  onClick={openAddGame}
-                >
-                  <Plus
-                    size={18}
-                    aria-hidden="true"
-                  />
+                {/* APENAS ADMINISTRADORA */}
+                {!loading && isAdmin && (
+                  <button
+                    type="button"
+                    className="gv-navbar-settings-item"
+                    onClick={openAddGame}
+                  >
+                    <Plus
+                      size={18}
+                      aria-hidden="true"
+                    />
 
-                  <span>Adicionar jogo</span>
-                </button>
+                    <span>Adicionar jogo</span>
+                  </button>
+                )}
 
+                {/* TEMA PARA TODOS */}
                 <button
                   type="button"
                   className="gv-navbar-settings-item"
@@ -378,6 +415,27 @@ function Navbar() {
                       : 'Ativar modo claro'}
                   </span>
                 </button>
+
+                {/* LOGOUT ADMINISTRATIVO */}
+                {!loading && isAdmin && (
+                  <button
+                    type="button"
+                    className="gv-navbar-settings-item"
+                    onClick={() => void handleLogout()}
+                    disabled={loggingOut}
+                  >
+                    <LogOut
+                      size={18}
+                      aria-hidden="true"
+                    />
+
+                    <span>
+                      {loggingOut
+                        ? 'Saindo...'
+                        : 'Encerrar sessão'}
+                    </span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -386,9 +444,22 @@ function Navbar() {
           <button
             type="button"
             className="gv-navbar-profile"
-            aria-label="Perfil — em desenvolvimento"
-            title="Perfil em desenvolvimento"
-            disabled
+            aria-label={
+              loading
+                ? 'Verificando sessão'
+                : isAdmin
+                  ? 'Opções administrativas'
+                  : 'Entrar'
+            }
+            title={
+              loading
+                ? 'Verificando sessão'
+                : isAdmin
+                  ? 'Opções administrativas'
+                  : 'Entrar'
+            }
+            onClick={handleProfileClick}
+            disabled={loading}
           >
             <UserRound
               size={21}
