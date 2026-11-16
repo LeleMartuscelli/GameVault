@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useAuth } from '../../contexts/useAuth'
 import { getGameImage } from '../../data/gameImage'
 import { getGames } from '../../services/gameApi'
 import type { Game } from '../../types/games'
@@ -20,6 +21,7 @@ import './Dashboard.css'
 
 function Dashboard() {
   const navigate = useNavigate()
+  const { isAdmin, loading: authLoading } = useAuth()
 
   const [allGames, setAllGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
@@ -250,14 +252,16 @@ function Dashboard() {
               <ArrowRight size={16} />
             </button>
 
-            <button
-              type="button"
-              className="gv-add-game"
-              onClick={() => navigate('/biblioteca')}
-            >
-              <Plus size={17} />
-              Adicionar jogo
-            </button>
+            {!authLoading && isAdmin && (
+              <button
+                type="button"
+                className="gv-add-game"
+                onClick={() => navigate('/adicionar')}
+              >
+                <Plus size={17} />
+                Adicionar jogo
+              </button>
+            )}
           </div>
         </div>
 

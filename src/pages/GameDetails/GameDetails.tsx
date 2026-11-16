@@ -13,6 +13,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
+import { useAuth } from '../../contexts/useAuth'
 import { getGameImage } from '../../data/gameImage'
 import {
   deleteGame,
@@ -20,6 +21,7 @@ import {
   updateGame,
 } from '../../services/gameApi'
 import type { Game } from '../../types/games'
+import GameGallery from '../../components/GameGallery/GameGallery'
 
 import './GameDetails.css'
 
@@ -32,6 +34,7 @@ type GameLoadState = {
 function GameDetails() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const { isAdmin, loading: authLoading } = useAuth()
 
   const [gameState, setGameState] = useState<GameLoadState>({
     id: undefined,
@@ -106,7 +109,7 @@ function GameDetails() {
       : ''
 
   async function handleFavorite() {
-    if (!game || savingFavorite || deleting) return
+    if (!isAdmin || authLoading || !game || savingFavorite || deleting) return
 
     try {
       setSavingFavorite(true)
@@ -141,7 +144,7 @@ function GameDetails() {
   }
 
   async function handleDelete() {
-    if (!game || deleting || savingFavorite) return
+    if (!isAdmin || authLoading || !game || deleting || savingFavorite) return
 
     const confirmed = window.confirm(
       `Tem certeza que deseja excluir "${game.title}" da biblioteca?`
@@ -332,28 +335,37 @@ function GameDetails() {
           </p>
         </div>
 
-        <button
-          type="button"
-          className={`gv-detail-favorite${
-            game.favorite ? ' is-active' : ''
-          }`}
-          onClick={handleFavorite}
-          disabled={savingFavorite || deleting}
-          aria-pressed={game.favorite}
-        >
-          <Heart
-            size={19}
-            fill={
-              game.favorite ? 'currentColor' : 'none'
-            }
-          />
-
-          {savingFavorite
-            ? 'Salvando...'
-            : game.favorite
-              ? 'Nos favoritos'
-              : 'Adicionar aos favoritos'}
-        </button>
+        {!authLoading && isAdmin ? (
+          <button
+            type="button"
+            className={`gv-detail-favorite${
+              game.favorite ? ' is-active' : ''
+            }`}
+            onClick={() => void handleFavorite()}
+            disabled={savingFavorite || deleting}
+            aria-pressed={game.favorite}
+          >
+            <Heart
+              size={19}
+              fill={game.favorite ? 'currentColor' : 'none'}
+            />
+            {savingFavorite
+              ? 'Salvando...'
+              : game.favorite
+                ? 'Nos favoritos'
+                : 'Adicionar aos favoritos'}
+          </button>
+        ) : (
+          <span
+            className={`gv-detail-favorite${game.favorite ? ' is-active' : ''}`}
+          >
+            <Heart
+              size={19}
+              fill={game.favorite ? 'currentColor' : 'none'}
+            />
+            {game.favorite ? 'Nos favoritos' : 'Não está nos favoritos'}
+          </span>
+        )}
       </section>
 
       {/* ESTATÍSTICAS */}
@@ -437,8 +449,13 @@ function GameDetails() {
         </div>
       </section>
 
+      {/* GALERIA */}
+
+      <GameGallery gameId={game.id} canManage={isAdmin && !authLoading} />
+
       {/* GERENCIAMENTO */}
 
+      {!authLoading && isAdmin && (
       <section className="gv-detail-management">
         <div className="gv-detail-management-copy">
           <span className="gv-detail-kicker">
@@ -470,7 +487,7 @@ function GameDetails() {
           <button
             type="button"
             className="gv-detail-danger"
-            onClick={handleDelete}
+            onClick={() => void handleDelete()}
             disabled={deleting || savingFavorite}
           >
             <Trash2 size={17} />
@@ -481,6 +498,7 @@ function GameDetails() {
           </button>
         </div>
       </section>
+      )}
 
       {actionError && (
         <p
