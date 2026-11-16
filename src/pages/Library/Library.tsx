@@ -1,6 +1,7 @@
 import { ArrowRight, Clock3, Gamepad2, Heart, Search, Trophy, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/useAuth'
 import { getGameImage } from '../../data/gameImage'
 import { getGames, updateGame } from '../../services/gameApi'
 import type { Game } from '../../types/games'
@@ -10,6 +11,7 @@ type SortOption = 'title-asc' | 'title-desc' | 'hours-desc' | 'hours-asc'
 
 function Library() {
   const navigate = useNavigate()
+  const { isAdmin, loading: authLoading } = useAuth()
   const [games, setGames] = useState<Game[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [platformFilter, setPlatformFilter] = useState('all')
@@ -82,7 +84,7 @@ function Library() {
   }
 
   async function handleToggleFavorite(game: Game) {
-    if (updatingFavoriteId !== null) return
+    if (!isAdmin || authLoading || updatingFavoriteId !== null) return
     setUpdatingFavoriteId(game.id)
     try {
       const updatedGame = await updateGame(game.id, {
@@ -166,7 +168,7 @@ function Library() {
         ) : loadError ? (
           <div className="gv-library-empty" role="alert"><Gamepad2 size={28} /><h3>Não foi possível carregar os jogos</h3><p>Verifique sua conexão com a API e tente atualizar a página.</p></div>
         ) : games.length === 0 ? (
-          <div className="gv-library-empty"><Gamepad2 size={28} /><h3>Sua história começa aqui.</h3><p>Adicione seu primeiro jogo para construir sua coleção pessoal.</p><button type="button" className="gv-library-primary" onClick={() => navigate('/adicionar')}>Adicionar primeiro jogo <ArrowRight size={16} /></button></div>
+          <div className="gv-library-empty"><Gamepad2 size={28} /><h3>Sua história começa aqui.</h3><p>Adicione seu primeiro jogo para construir sua coleção pessoal.</p>{!authLoading && isAdmin && <button type="button" className="gv-library-primary" onClick={() => navigate('/adicionar')}>Adicionar primeiro jogo <ArrowRight size={16} /></button>}</div>
         ) : filteredGames.length === 0 ? (
           <div className="gv-library-empty"><Search size={28} /><h3>Nenhum jogo encontrado</h3><p>Não há jogos que correspondam aos filtros selecionados.</p><button type="button" className="gv-library-secondary" onClick={clearFilters}>Limpar filtros</button></div>
         ) : (
@@ -178,9 +180,15 @@ function Library() {
                   <div className="gv-library-card-media">
                     {image ? <img src={image} alt="" loading="lazy" /> : <div className="gv-library-card-placeholder"><Gamepad2 size={34} aria-hidden="true" /><span>GAMEVAULT</span></div>}
                     <span className="gv-library-platform">{game.platform}</span>
-                    <button type="button" className={`gv-library-favorite${game.favorite ? ' is-active' : ''}`} aria-label={`${game.favorite ? 'Remover' : 'Adicionar'} ${game.title} ${game.favorite ? 'dos' : 'aos'} favoritos`} aria-pressed={game.favorite} disabled={updatingFavoriteId !== null} onClick={() => void handleToggleFavorite(game)}>
-                      <Heart size={19} fill={game.favorite ? 'currentColor' : 'none'} />
-                    </button>
+                    {!authLoading && isAdmin ? (
+                      <button type="button" className={`gv-library-favorite${game.favorite ? ' is-active' : ''}`} aria-label={`${game.favorite ? 'Remover' : 'Adicionar'} ${game.title} ${game.favorite ? 'dos' : 'aos'} favoritos`} aria-pressed={game.favorite} disabled={updatingFavoriteId !== null} onClick={() => void handleToggleFavorite(game)}>
+                        <Heart size={19} fill={game.favorite ? 'currentColor' : 'none'} />
+                      </button>
+                    ) : game.favorite ? (
+                      <span className="gv-library-favorite is-active" title="Jogo favorito" aria-label="Jogo favorito">
+                        <Heart size={19} fill="currentColor" aria-hidden="true" />
+                      </span>
+                    ) : null}
                   </div>
                   <div className="gv-library-card-body">
                     <h3>{game.title}</h3>

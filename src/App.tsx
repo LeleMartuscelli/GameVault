@@ -1,5 +1,7 @@
 
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
+
+import { useAuth } from './contexts/useAuth'
 
 import MainLayout from './layouts/MainLayout'
 import Dashboard from './pages/Dashboard/Dashboard'
@@ -12,6 +14,38 @@ import Login from './pages/Login/Login'
 
 import './App.css'
 
+// Protege as páginas exclusivas da administradora
+function AdminRoute() {
+  const { isAdmin, loading } = useAuth()
+
+  // Aguarda a verificação da sessão antes de decidir o acesso
+  if (loading) {
+    return (
+      <main
+        role="status"
+        aria-live="polite"
+        style={{
+          minHeight: '60vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
+        }}
+      >
+        <p>Verificando acesso administrativo...</p>
+      </main>
+    )
+  }
+
+  // Visitantes precisam fazer login
+  if (!isAdmin) {
+    return <Navigate to="/login" replace />
+  }
+
+  // Administradora pode acessar a página solicitada
+  return <Outlet />
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -19,14 +53,21 @@ function App() {
         {/* Login sem a barra de navegação */}
         <Route path="/login" element={<Login />} />
 
-        {/* Páginas principais */}
+        {/* Layout principal */}
         <Route element={<MainLayout />}>
+
+          {/* Páginas públicas */}
           <Route path="/" element={<Dashboard />} />
           <Route path="/biblioteca" element={<Library />} />
           <Route path="/favoritos" element={<Favorites />} />
-          <Route path="/adicionar" element={<AddGame />} />
           <Route path="/jogo/:id" element={<GameDetails />} />
-          <Route path="/editar/:id" element={<EditGame />} />
+
+          {/* Páginas exclusivas da administradora */}
+          <Route element={<AdminRoute />}>
+            <Route path="/adicionar" element={<AddGame />} />
+            <Route path="/editar/:id" element={<EditGame />} />
+          </Route>
+
         </Route>
       </Routes>
     </BrowserRouter>
