@@ -25,6 +25,23 @@ export interface AddGameMediaData {
   caption?: string
 }
 
+function resolveMediaUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) {
+    return url
+  }
+
+  const apiOrigin = new URL(GALLERY_API_URL).origin
+
+  return new URL(url, apiOrigin).href
+}
+
+function normalizeMedia(media: GameMedia): GameMedia {
+  return {
+    ...media,
+    mediaUrl: resolveMediaUrl(media.mediaUrl)
+  }
+}
+
 async function handleResponse<T>(
   response: Response,
   defaultMessage: string
@@ -55,12 +72,11 @@ async function getAuthHeaders(): Promise<HeadersInit> {
   }
 
   return {
-    'Content-Type': 'application/json',
-    'X-CSRF-Token': session.csrfToken,
+    'X-CSRF-Token': session.csrfToken
   }
 }
 
-// Listar mídias de um jogo (público)
+// Consulta pública
 export async function getGameMedia(
   gameId: number
 ): Promise<GameMedia[]> {
@@ -68,36 +84,73 @@ export async function getGameMedia(
     `${GALLERY_API_URL}/game/${gameId}`
   )
 
-  return handleResponse<GameMedia[]>(
+  const data = await handleResponse<GameMedia[]>(
     response,
     'Não foi possível carregar a galeria.'
   )
+
+  return data.map(normalizeMedia)
 }
 
-// Adicionar mídia (administradora)
+// Cadastro por URL
 export async function addGameMedia(
   gameId: number,
   data: AddGameMediaData
 ): Promise<GameMedia> {
-  const headers = await getAuthHeaders()
+  const authHeaders = await getAuthHeaders()
 
   const response = await fetch(
     `${GALLERY_API_URL}/game/${gameId}`,
     {
       method: 'POST',
       credentials: 'include',
-      headers,
-      body: JSON.stringify(data),
+      headers: {
+        ...authHeaders,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
     }
   )
 
-  return handleResponse<GameMedia>(
+  const media = await handleResponse<GameMedia>(
     response,
     'Não foi possível adicionar a mídia.'
   )
+
+  return normalizeMedia(media)
 }
 
-// Excluir mídia (administradora)
+// Upload direto do computador
+export async function uploadGameMedia(
+  gameId: number,
+  file: File,
+  caption = ''
+): Promise<GameMedia> {
+  const headers = await getAuthHeaders()
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('caption', caption)
+
+  const response = await fetch(
+    `${GALLERY_API_URL}/game/${gameId}/upload`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers,
+      body: formData
+    }
+  )
+
+  const media = await handleResponse<GameMedia>(
+    response,
+    'Não foi possível enviar o arquivo.'
+  )
+
+  return normalizeMedia(media)
+}
+
+// Exclusão administrativa
 export async function removeGameMedia(
   mediaId: number
 ): Promise<void> {
@@ -108,7 +161,7 @@ export async function removeGameMedia(
     {
       method: 'DELETE',
       credentials: 'include',
-      headers,
+      headers
     }
   )
 
