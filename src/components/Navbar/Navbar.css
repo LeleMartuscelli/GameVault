@@ -1,9 +1,3 @@
-
-/* =========================================================
-   GAMEVAULT — NAVBAR
-   Minimalismo premium | Glassmorphism
-   ========================================================= */
-
 /* 01. BARRA PRINCIPAL */
 
 .gv-navbar {
@@ -55,7 +49,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(48px, 4.5vw, 90px);
+  gap: 60px;
 }
 
 .gv-navbar-links a {
@@ -68,7 +62,7 @@
   min-height: 76px;
 
   color: var(--text-secondary);
-  font-size: 1.12rem;
+  font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.02em;
 
@@ -421,7 +415,7 @@
 
 @media (max-width: 1350px) {
   .gv-navbar-links {
-    gap: 40px;
+    gap: 34px;
   }
 
   .gv-navbar-links a {
@@ -447,11 +441,11 @@
   }
 
   .gv-navbar-links {
-    gap: 24px;
+    gap: 22px;
   }
 
   .gv-navbar-links a {
-    font-size: 0.94rem;
+    font-size: 0.98rem;
   }
 
   .gv-navbar-search {
@@ -623,5 +617,29 @@
   .gv-navbar *::after {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+
+/* 17. AJUSTE FINAL — LINKS DA NAVEGAÇÃO */
+@media (min-width: 901px) {
+  .gv-navbar .gv-navbar-inner .gv-navbar-links {
+    gap: 80px;
+  }
+
+  .gv-navbar .gv-navbar-inner .gv-navbar-links a {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1100px) {
+  .gv-navbar .gv-navbar-inner .gv-navbar-links {
+    gap: 32px;
+  }
+
+  .gv-navbar .gv-navbar-inner .gv-navbar-links a {
+    font-size: 17px;
   }
 }

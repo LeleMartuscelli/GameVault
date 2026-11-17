@@ -1,24 +1,28 @@
 # 🎮 GameVault
 
-GameVault é uma aplicação web desenvolvida para organizar e acompanhar uma biblioteca pessoal de jogos.
+**GameVault** é uma aplicação web desenvolvida para organizar e acompanhar uma biblioteca pessoal de jogos.
 
-O sistema permite cadastrar, visualizar, editar e excluir jogos, acompanhar horas jogadas, visualizar estatísticas, controlar o status dos jogos e gerenciar favoritos através de uma interface moderna e responsiva.
+O sistema permite visualizar jogos, acompanhar estatísticas, registrar horas jogadas, controlar o progresso, consultar favoritos e visualizar galerias de imagens. As operações de cadastro, edição e exclusão são restritas à área administrativa, protegida por autenticação.
 
-O projeto foi desenvolvido como parte da disciplina **Software Project**, do curso de **Análise e Desenvolvimento de Sistemas**, evoluindo de uma aplicação front-end com armazenamento local para uma arquitetura integrada entre **front-end e API REST**.
+O projeto foi desenvolvido na disciplina **Software Project**, do curso de **Análise e Desenvolvimento de Sistemas (ADS)**, evoluindo de uma aplicação com armazenamento local para uma arquitetura full stack com API REST e persistência em PostgreSQL.
 
 ## 🌐 Projeto online
 
-Acesse a aplicação publicada:
+**Aplicação web — Vercel**
 
 https://game-vault-three-ebon.vercel.app/
 
-### API
-
-A API do GameVault está publicada no Render:
+**API REST — Render**
 
 https://gamevault-vuz1.onrender.com/api/games
 
-> O backend utiliza o plano gratuito do Render e pode levar cerca de 50 segundos ou mais para iniciar após um período de inatividade.
+**Repositório GitHub**
+
+https://github.com/LeleMartuscelli/GameVault
+
+> O backend utiliza a infraestrutura do Render. Em instâncias gratuitas, o primeiro acesso após um período de inatividade pode apresentar um tempo de inicialização maior.
+
+> A publicação online deve ser conferida após a integração das alterações mais recentes do projeto.
 
 ## 📸 Preview
 
@@ -36,38 +40,37 @@ https://gamevault-vuz1.onrender.com/api/games
 
 ## ✨ Funcionalidades
 
-- Dashboard com visão geral da biblioteca
-- Estatísticas atualizadas dinamicamente
-- Listagem dos jogos através da API
-- Cadastro de novos jogos
-- Visualização dos detalhes de cada jogo
-- Edição de jogos cadastrados
-- Exclusão de jogos
-- Busca de jogos pelo nome
-- Sistema de favoritos
-- Página dedicada aos jogos favoritos
-- Controle de status dos jogos
-- Validação dos dados enviados para a API
-- Tratamento de jogos não encontrados
-- Integração completa entre front-end e backend
-- Layout responsivo para desktop e dispositivos móveis
-- Tratamento de estados vazios
+### Funcionalidades públicas
 
-## 🔄 Operações CRUD
+- Dashboard com visão geral da biblioteca.
+- Estatísticas calculadas a partir dos jogos cadastrados.
+- Listagem de jogos por meio da API REST.
+- Busca de jogos pelo nome.
+- Consulta de detalhes individuais.
+- Visualização de favoritos.
+- Consulta do status e progresso de cada jogo.
+- Visualização da galeria de imagens.
+- Alternância entre temas claro e escuro.
+- Interface responsiva com navegação adaptada para diferentes dispositivos.
+- Tratamento de carregamento, erros e estados vazios.
 
-A API REST implementa as principais operações de gerenciamento dos jogos:
+### Funcionalidades administrativas
 
-| Método | Rota | Função |
-| --- | --- | --- |
-| `GET` | `/api/games` | Listar todos os jogos |
-| `GET` | `/api/games/:id` | Buscar um jogo pelo ID |
-| `POST` | `/api/games` | Cadastrar um novo jogo |
-| `PUT` | `/api/games/:id` | Atualizar um jogo |
-| `DELETE` | `/api/games/:id` | Excluir um jogo |
+- Login administrativo.
+- Cadastro de novos jogos.
+- Edição de jogos existentes.
+- Exclusão de jogos.
+- Gerenciamento das imagens associadas aos jogos.
+- Cadastro de imagens por URL.
+- Upload de imagens diretamente do computador.
+- Exclusão de imagens.
+- Encerramento da sessão administrativa.
 
-## 🛠️ Tecnologias
+As funcionalidades de consulta são públicas. As operações que modificam os dados exigem autenticação administrativa.
 
-### Front-end
+## 🛠️ Tecnologias utilizadas
+
+### Frontend
 
 - React
 - TypeScript
@@ -75,188 +78,125 @@ A API REST implementa as principais operações de gerenciamento dos jogos:
 - React Router DOM
 - Lucide React
 - CSS
+- Fetch API
 
 ### Backend
 
 - Node.js
 - Express
+- API REST
 - CORS
-- Nodemon
+- Express Session
+- Argon2
+- Proteção CSRF
+- Multer para upload de arquivos
 
-### Ferramentas e deploy
+### Banco de dados
 
-- Git
-- GitHub
+- PostgreSQL
+- Neon — hospedagem do banco de dados
+- Armazenamento persistente de jogos e imagens
+
+### Ferramentas e infraestrutura
+
+- Git e GitHub
 - GitHub Projects
 - Visual Studio Code
-- Vercel
-- Render
+- Vercel — hospedagem do frontend
+- Render — hospedagem do backend
+- draw.io — documentação UML
 
-## 🏗️ Arquitetura
+## 🏗️ Arquitetura do sistema
 
-O GameVault está atualmente dividido em duas partes principais:
+O GameVault utiliza uma arquitetura cliente-servidor composta por três camadas principais.
 
-**Front-end:** responsável pela interface, navegação, formulários, estatísticas e interação com o usuário.
+**Frontend:** responsável pela interface, navegação, apresentação das estatísticas e comunicação com a API.
 
-**Backend:** responsável pela API REST, regras de validação e operações CRUD dos jogos.
+**Backend:** responsável pelo processamento das requisições HTTP, validação dos dados, autenticação, autorização e gerenciamento das operações do sistema.
 
-O front-end se comunica com o backend através de requisições HTTP utilizando a Fetch API.
-
-```text
-Usuário
-   │
-   ▼
-React + TypeScript
-   │
-   │ HTTP / Fetch
-   ▼
-API REST
-Node.js + Express
-   │
-   ▼
-Dados em memória
-```
-
-A persistência definitiva em banco de dados será implementada em uma etapa posterior do projeto.
-
-## 📂 Estrutura do projeto
+**Banco de dados:** responsável pela persistência dos jogos, metadados das imagens e arquivos enviados.
 
 ```text
-GameVault/
-├── backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── data/
-│   │   └── routes/
-│   ├── package.json
-│   └── server.js
-│
-├── src/
-│   ├── assets/
-│   │   └── games/
-│   ├── components/
-│   │   └── Sidebar/
-│   ├── data/
-│   ├── layouts/
-│   ├── pages/
-│   │   ├── AddGame/
-│   │   ├── Dashboard/
-│   │   ├── EditGame/
-│   │   ├── Favorites/
-│   │   ├── GameDetails/
-│   │   └── Library/
-│   ├── services/
-│   │   └── gameApi.ts
-│   ├── types/
-│   ├── App.css
-│   ├── App.tsx
-│   ├── index.css
-│   └── main.tsx
-│
-└── README.md
+                 USUÁRIO
+                    |
+                    v
+          React + TypeScript
+              (Vercel)
+                    |
+               HTTP / Fetch
+                    |
+                    v
+            API REST Express
+               (Render)
+                    |
+                    v
+               PostgreSQL
+                 (Neon)
 ```
 
-## 🚀 Como executar o projeto
+Essa arquitetura permite separar a interface das regras de negócio e manter os dados armazenados independentemente do ciclo de vida do servidor.
 
-### Pré-requisitos
+## 🔄 API REST
 
-Antes de começar, é necessário ter o **Node.js**, **npm** e **Git** instalados.
+### Gerenciamento de jogos
 
-### 1. Clonar o repositório
+| Método | Endpoint | Descrição | Acesso |
+|---|---|---|---|
+| GET | `/api/games` | Listar jogos | Público |
+| GET | `/api/games/:id` | Consultar jogo por ID | Público |
+| POST | `/api/games` | Cadastrar jogo | Administrador |
+| PUT | `/api/games/:id` | Atualizar jogo | Administrador |
+| DELETE | `/api/games/:id` | Excluir jogo | Administrador |
 
-```bash
-git clone https://github.com/LeleMartuscelli/GameVault.git
-```
+### Galeria de imagens
 
-Entre na pasta:
+| Método | Endpoint | Descrição | Acesso |
+|---|---|---|---|
+| GET | `/api/gallery/game/:gameId` | Listar imagens do jogo | Público |
+| GET | `/api/gallery/file/:id` | Consultar arquivo armazenado | Público |
+| POST | `/api/gallery/game/:gameId` | Adicionar imagem por URL | Administrador |
+| POST | `/api/gallery/game/:gameId/upload` | Enviar imagem | Administrador |
+| DELETE | `/api/gallery/:id` | Excluir imagem | Administrador |
 
-```bash
-cd GameVault
-```
+As operações administrativas exigem sessão autenticada e validação CSRF, conforme as rotas implementadas no backend.
 
-### 2. Executar o backend
+## 🔐 Autenticação e segurança
 
-Entre na pasta do backend:
+O GameVault possui uma área administrativa protegida por autenticação.
 
-```bash
-cd backend
-```
+Entre os mecanismos implementados estão:
 
-Instale as dependências:
+- Verificação de credenciais no backend.
+- Utilização de Argon2 para verificação segura de senhas.
+- Gerenciamento de sessão com Express Session.
+- Persistência de sessões no PostgreSQL.
+- Middleware de autorização para operações administrativas.
+- Proteção CSRF em requisições que modificam dados.
+- Validação dos parâmetros e dados recebidos pela API.
+- Consultas parametrizadas ao PostgreSQL.
 
-```bash
-npm install
-```
+A autenticação separa as funcionalidades públicas das operações de administração da biblioteca.
 
-Inicie o servidor:
+## 🗄️ Persistência de dados
 
-```bash
-npm run dev
-```
+O GameVault utiliza **PostgreSQL hospedado no Neon** para armazenar os dados de maneira persistente.
 
-Por padrão, a API ficará disponível em:
+### Jogos
 
-```text
-http://localhost:3000
-```
+Cada jogo possui os seguintes atributos utilizados pelo frontend:
 
-### 3. Executar o front-end
+| Atributo | Tipo |
+|---|---|
+| id | number |
+| title | string |
+| platform | string |
+| hoursPlayed | number |
+| timesCompleted | number |
+| achievements | number |
+| status | GameStatus |
+| favorite | boolean |
 
-Abra outro terminal e volte para a raiz do projeto:
-
-```bash
-cd ..
-```
-
-Instale as dependências do front-end, caso ainda não tenha feito:
-
-```bash
-npm install
-```
-
-Execute:
-
-```bash
-npm run dev
-```
-
-Depois, abra no navegador o endereço exibido pelo Vite.
-
-## ⚙️ Variável de ambiente
-
-Em produção, o front-end utiliza a variável:
-
-```text
-VITE_API_URL
-```
-
-Ela define o endereço da API utilizada pela aplicação.
-
-Caso a variável não esteja configurada, o ambiente de desenvolvimento utiliza:
-
-```text
-http://localhost:3000/api/games
-```
-
-## 💾 Armazenamento de dados
-
-Na versão atual, os dados são gerenciados pelo **backend através da API REST**.
-
-O backend ainda utiliza uma estrutura de dados em memória. Isso significa que alterações realizadas durante a execução podem ser perdidas quando o servidor é reiniciado ou quando ocorre um novo deploy.
-
-Essa implementação é temporária e permite demonstrar a arquitetura front-end/backend e as operações CRUD antes da integração com um banco de dados.
-
-## 🛡️ Validações da API
-
-A API possui validações para garantir maior consistência dos dados, incluindo:
-
-- título, plataforma e status obrigatórios;
-- valores numéricos não negativos;
-- validação dos status permitidos;
-- tratamento de jogos inexistentes;
-- geração de IDs sem reutilização indevida após exclusões.
-
-Os status atualmente aceitos são:
+### Status disponíveis
 
 - Jogando
 - Zerado
@@ -264,53 +204,181 @@ Os status atualmente aceitos são:
 - Pausado
 - Abandonado
 
+### Galeria de imagens
+
+Os registros de imagens são associados aos jogos por meio da tabela `game_media`.
+
+Os arquivos enviados pelo usuário são armazenados no PostgreSQL por meio da tabela `game_media_files`.
+
+A aplicação oferece duas formas de adicionar imagens:
+
+1. Informar uma URL HTTP ou HTTPS válida.
+2. Enviar um arquivo diretamente do computador.
+
+Os formatos aceitos para upload são **JPG, PNG, WebP e GIF**, com tamanho máximo de **5 MB por imagem**.
+
+O backend verifica o formato declarado e a assinatura do arquivo antes de armazená-lo.
+
+## 📂 Organização do projeto
+
+A estrutura está organizada em frontend e backend, com separação de responsabilidades.
+
+```text
+GameVault/
+│
+├── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   └── routes/
+│   ├── package.json
+│   └── server.js
+│
+├── src/
+│   ├── assets/
+│   ├── components/
+│   │   └── GameGallery/
+│   ├── layouts/
+│   ├── pages/
+│   │   ├── Dashboard/
+│   │   ├── Library/
+│   │   ├── Favorites/
+│   │   ├── GameDetails/
+│   │   ├── AddGame/
+│   │   └── EditGame/
+│   ├── services/
+│   │   ├── gameApi.ts
+│   │   └── galleryApi.ts
+│   ├── types/
+│   ├── App.tsx
+│   └── main.tsx
+│
+├── screenshots/
+├── package.json
+└── README.md
+```
+
+*Estrutura resumida dos principais diretórios e arquivos. A organização completa pode ser consultada no repositório.*
+
+## 🚀 Executando o projeto localmente
+
+### Pré-requisitos
+
+- Node.js
+- npm
+- Git
+- Acesso a um banco PostgreSQL compatível
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/LeleMartuscelli/GameVault.git
+cd GameVault
+```
+
+### 2. Configurar o backend
+
+Entre na pasta do backend:
+
+```bash
+cd backend
+npm install
+```
+
+Configure as variáveis de ambiente exigidas pela implementação, incluindo a conexão com o PostgreSQL e os segredos utilizados na autenticação e no gerenciamento de sessões.
+
+As credenciais e os segredos devem permanecer fora do controle de versão.
+
+Inicie o backend:
+
+```bash
+npm run dev
+```
+
+### 3. Executar o frontend
+
+Em outro terminal, acesse a raiz do projeto:
+
+```bash
+npm install
+npm run dev
+```
+
+Abra no navegador o endereço informado pelo Vite.
+
+### 4. Configuração da API
+
+O frontend utiliza a variável de ambiente:
+
+```env
+VITE_API_URL=
+```
+
+Essa variável deve apontar para o endereço da API configurado para o ambiente utilizado.
+
+A URL local ou de produção precisa ser compatível com a configuração dos serviços de comunicação do frontend.
+
+## 📐 Documentação UML
+
+O projeto possui dois diagramas elaborados no draw.io:
+
+**Diagrama de Classes**
+
+Representa as estruturas principais dos jogos, seus status e os registros associados à galeria de imagens.
+
+**Diagrama de Casos de Uso**
+
+Representa as funcionalidades disponíveis para os atores Visitante e Administrador, incluindo consultas públicas, autenticação e operações de gerenciamento.
+
+Os diagramas são mantidos em arquivos editáveis no formato `.drawio`.
+
 ## 📚 Evolução do projeto
 
-### V1 — Front-end
+### V1 — Interface e armazenamento local
 
-A primeira etapa do GameVault foi desenvolvida com foco na construção da interface e das principais funcionalidades do sistema.
+A primeira versão foi desenvolvida com React, com foco na interface e na organização da biblioteca de jogos.
 
 Os dados eram armazenados localmente no navegador utilizando `localStorage`.
 
-### V2 — Backend e API REST
+### V2 — API REST
 
-Na segunda etapa, o projeto passou a utilizar uma arquitetura cliente-servidor.
+Na segunda etapa, o projeto evoluiu para uma arquitetura cliente-servidor.
 
 Foram implementados:
 
-- backend com Node.js e Express;
-- API REST;
-- operações CRUD;
-- integração do React com a API;
-- validação dos dados;
-- tratamento de erros;
-- publicação do backend no Render;
-- integração da aplicação publicada no Vercel com a API em produção.
+- Backend com Node.js e Express.
+- API REST para gerenciamento de jogos.
+- Operações CRUD.
+- Integração do frontend com a API.
+- Validações e tratamento de erros.
+- Publicação do frontend na Vercel.
+- Publicação do backend no Render.
 
-### Próximas etapas
+### V3 — PostgreSQL, autenticação e galeria
 
-Estão planejadas para a evolução do projeto:
+Na terceira etapa, foram implementados:
 
-- integração com PostgreSQL;
-- persistência definitiva dos dados;
-- modelagem do banco de dados;
-- autenticação de usuários;
-- perfil do usuário;
-- upload e armazenamento de capas;
-- expansão das informações dos jogos;
-- melhorias na identidade visual e experiência do usuário;
-- possíveis integrações com plataformas de jogos.
+- Persistência de dados no PostgreSQL.
+- Hospedagem do banco de dados no Neon.
+- Integração das operações CRUD com o banco.
+- Autenticação administrativa.
+- Controle de acesso às operações de escrita.
+- Gerenciamento de sessões.
+- Proteção CSRF.
+- Galeria de imagens associadas aos jogos.
+- Upload e armazenamento de imagens no banco de dados.
+- Melhorias na interface e na navegação.
+- Documentação UML do sistema.
 
 ## 📌 Status do projeto
 
-**GameVault — AC2: Front-end integrado à API REST.**
+**GameVault — AC3: integração com PostgreSQL e evolução da aplicação full stack.**
 
-A aplicação possui atualmente front-end e backend funcionais e publicados.
-
-A próxima etapa do projeto será focada na implementação do banco de dados e na evolução da aplicação.
+As principais funcionalidades foram implementadas. O projeto encontra-se na fase de testes finais, validação do ambiente publicado e preparação da entrega acadêmica.
 
 ## 👩‍💻 Autora
 
 Desenvolvido por **Letícia Martuscelli de Moraes**.
 
-Projeto acadêmico desenvolvido no curso de **Análise e Desenvolvimento de Sistemas**.
+Projeto acadêmico do curso de **Análise e Desenvolvimento de Sistemas (ADS)**, desenvolvido na disciplina **Software Project**.
