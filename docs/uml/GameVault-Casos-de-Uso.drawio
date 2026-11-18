@@ -1,0 +1,94 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Casos de Uso — GameVault" id="gamevault-usecases">
+    <mxGraphModel dx="1813" dy="960" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1400" pageHeight="1000" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=0;fontSize=26;fontStyle=1;fontColor=#202124;align=left;" value="GameVault | Diagrama de Casos de Uso" vertex="1">
+          <mxGeometry height="50" width="1200" x="60" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="system" parent="1" style="swimlane;html=0;startSize=50;horizontal=1;rounded=0;fillColor=#F3F4F6;swimlaneFillColor=#FFFFFF;strokeColor=#9CA3AF;fontColor=#202124;fontSize=18;fontStyle=1;" value="SISTEMA GAMEVAULT" vertex="1">
+          <mxGeometry height="740" width="920" x="240" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="visitor" parent="1" style="shape=umlActor;html=0;verticalLabelPosition=bottom;verticalAlign=top;fillColor=#FFFFFF;strokeColor=#374151;fontColor=#202124;fontSize=17;" value="Visitante" vertex="1">
+          <mxGeometry height="100" width="70" x="70" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" parent="1" style="shape=umlActor;html=0;verticalLabelPosition=bottom;verticalAlign=top;fillColor=#FFFFFF;strokeColor=#374151;fontColor=#202124;fontSize=17;" value="Administrador" vertex="1">
+          <mxGeometry height="100" width="70" x="1260" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="public-label" parent="1" style="text;html=0;fontSize=14;fontStyle=1;fontColor=#6B7280;align=center;" value="CONSULTAS PÚBLICAS" vertex="1">
+          <mxGeometry height="30" width="280" x="300" y="185" as="geometry" />
+        </mxCell>
+        <mxCell id="admin-label" parent="1" style="text;html=0;fontSize=14;fontStyle=1;fontColor=#6B7280;align=center;" value="ADMINISTRAÇÃO" vertex="1">
+          <mxGeometry height="30" width="280" x="820" y="185" as="geometry" />
+        </mxCell>
+        <mxCell id="dashboard" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Visualizar dashboard" vertex="1">
+          <mxGeometry height="60" width="280" x="300" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="library" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Consultar biblioteca" vertex="1">
+          <mxGeometry height="60" width="280" x="300" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="favorites" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Consultar favoritos" vertex="1">
+          <mxGeometry height="60" width="280" x="300" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="details" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Visualizar detalhes do jogo" vertex="1">
+          <mxGeometry height="60" width="280" x="300" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="gallery" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Visualizar galeria de imagens" vertex="1">
+          <mxGeometry height="60" width="280" x="300" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="login" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Realizar login" vertex="1">
+          <mxGeometry height="60" width="280" x="820" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="create" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Cadastrar jogo" vertex="1">
+          <mxGeometry height="60" width="280" x="820" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="edit" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Editar jogo" vertex="1">
+          <mxGeometry height="60" width="280" x="820" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="delete" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Excluir jogo" vertex="1">
+          <mxGeometry height="60" width="280" x="820" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="media" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Gerenciar imagens" vertex="1">
+          <mxGeometry height="60" width="280" x="820" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="logout" parent="1" style="ellipse;whiteSpace=wrap;html=0;fillColor=#F9FAFB;strokeColor=#6B7280;fontColor=#202124;fontSize=16;" value="Encerrar sessão" vertex="1">
+          <mxGeometry height="60" width="280" x="820" y="715" as="geometry" />
+        </mxCell>
+        <mxCell id="v1" edge="1" parent="1" source="visitor" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="dashboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="v2" edge="1" parent="1" source="visitor" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="library">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="v3" edge="1" parent="1" source="visitor" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="favorites">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="v4" edge="1" parent="1" source="visitor" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="details">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="v5" edge="1" parent="1" source="visitor" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="gallery">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" target="login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" target="create">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" target="edit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" target="delete">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" target="media">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;strokeColor=#6B7280;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" target="logout">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
