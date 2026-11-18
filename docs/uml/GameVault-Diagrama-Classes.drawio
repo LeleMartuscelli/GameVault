@@ -1,0 +1,68 @@
+<mxfile host="app.diagrams.net" agent="ChatGPT">
+  <diagram name="Diagrama de Classes" id="gamevault-classes">
+    <mxGraphModel dx="1704" dy="902" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#17212F;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=28;" value="&lt;b&gt;GameVault&lt;/b&gt;  |  Diagrama de Classes" vertex="1">
+          <mxGeometry height="45" width="820" x="70" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#17212F;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=14;fontColor=#64748B;" value="Modelo UML baseado na interface Game e no controlador da galeria" vertex="1">
+          <mxGeometry height="28" width="850" x="70" y="89" as="geometry" />
+        </mxCell>
+        <mxCell id="L8XMdwz4BmgYIjEU3R26-4" edge="1" parent="1" source="game" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;defaultLabelBackgroundColor=page;labelPadding=0 4;" target="status-head">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="L8XMdwz4BmgYIjEU3R26-5" connectable="0" parent="L8XMdwz4BmgYIjEU3R26-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];inheritText=fontFamily,fontSize,fontStyle,textOpacity,labelBorderColor,labelBorderWidth,labelBackgroundColor,defaultLabelBackgroundColor,labelPadding;defaultLabelBackgroundColor=page;labelPadding=0 4;fontColor=light-dark(#000000,#ACB8C9);" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;status&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.0801" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="game" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;strokeColor=#CBD5E1;strokeWidth=1.5;fillColor=#FFFFFF;fontColor=#1F2937;align=left;verticalAlign=top;spacingLeft=17;spacingTop=15;fontSize=16;shadow=0;" value="&lt;div style=&quot;font-family: Arial, sans-serif; line-height: 1.75;&quot;&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;+ id: number&lt;br&gt;+ title: string&lt;br&gt;+ platform: string&lt;br&gt;+ hoursPlayed: number&lt;br&gt;+ timesCompleted: number&lt;br&gt;+ achievements: number&lt;br&gt;+ status: GameStatus&lt;br&gt;+ favorite: boolean&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="307" width="355" x="70" y="213" as="geometry" />
+        </mxCell>
+        <mxCell id="game-head" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;strokeColor=#CBD5E1;strokeWidth=1.5;fillColor=#E9EEF5;fontColor=#17212F;align=center;verticalAlign=middle;fontSize=19;fontStyle=1;" value="Game" vertex="1">
+          <mxGeometry height="48" width="355" x="70" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="media" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;strokeColor=#CBD5E1;strokeWidth=1.5;fillColor=#FFFFFF;fontColor=#1F2937;align=left;verticalAlign=top;spacingLeft=17;spacingTop=15;fontSize=16;shadow=0;" value="&lt;div style=&quot;font-family: Arial, sans-serif; line-height: 1.75;&quot;&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;+ id: number&lt;br&gt;+ gameId: number&lt;br&gt;+ mediaType: string&lt;br&gt;+ mediaUrl: string&lt;br&gt;+ caption: string | null&lt;br&gt;+ createdAt: Date&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="262" width="355" x="570" y="213" as="geometry" />
+        </mxCell>
+        <mxCell id="media-head" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;strokeColor=#CBD5E1;strokeWidth=1.5;fillColor=#E9EEF5;fontColor=#17212F;align=center;verticalAlign=middle;fontSize=19;fontStyle=1;" value="GameMedia" vertex="1">
+          <mxGeometry height="48" width="355" x="570" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="file" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;strokeColor=#CBD5E1;strokeWidth=1.5;fillColor=#FFFFFF;fontColor=#1F2937;align=left;verticalAlign=top;spacingLeft=17;spacingTop=15;fontSize=16;shadow=0;" value="&lt;div style=&quot;font-family: Arial, sans-serif; line-height: 1.75;&quot;&gt;&lt;font style=&quot;font-size: 17px;&quot;&gt;+ mediaId: number&lt;br&gt;+ fileData: Buffer&lt;br&gt;+ mimeType: string&lt;br&gt;+ fileSize: number&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="197" width="330" x="1033" y="218" as="geometry" />
+        </mxCell>
+        <mxCell id="file-head" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;strokeColor=#CBD5E1;strokeWidth=1.5;fillColor=#E9EEF5;fontColor=#17212F;align=center;verticalAlign=middle;fontSize=19;fontStyle=1;" value="GameMediaFile" vertex="1">
+          <mxGeometry height="48" width="330" x="1033" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="status" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;strokeColor=#CBD5E1;strokeWidth=1.5;fillColor=#FFFFFF;fontColor=#1F2937;align=left;verticalAlign=top;spacingLeft=17;spacingTop=15;fontSize=16;shadow=0;" value="&lt;div style=&quot;font-family: Arial, sans-serif; line-height: 1.75;&quot;&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;Jogando&lt;br&gt;Zerado&lt;br&gt;Quero jogar&lt;br&gt;Pausado&lt;br&gt;Abandonado&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="197" width="355" x="70" y="670" as="geometry" />
+        </mxCell>
+        <mxCell id="status-head" parent="1" style="rounded=1;arcSize=13;whiteSpace=wrap;html=1;strokeColor=#CBD5E1;strokeWidth=1.5;fillColor=#E9EEF5;fontColor=#17212F;align=center;verticalAlign=middle;fontSize=19;fontStyle=1;" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;/span&gt;&lt;br&gt;&lt;/font&gt;GameStatus" vertex="1">
+          <mxGeometry height="59" width="355" x="70" y="611" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="game" style="endArrow=none;startArrow=none;html=1;strokeColor=#64748B;strokeWidth=2;fontSize=15;fontColor=#334155;exitX=1;exitY=0.42;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="media" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;possui&lt;/font&gt;">
+          <mxGeometry relative="1" x="0.0068" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="media" style="endArrow=none;startArrow=none;html=1;strokeColor=#64748B;strokeWidth=2;fontSize=15;fontColor=#334155;exitX=1;exitY=0.48;exitDx=0;exitDy=0;entryX=0;entryY=0.6;entryDx=0;entryDy=0;" target="file" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;arquivo&lt;/font&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#17212F;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;align=center;" value="1" vertex="1">
+          <mxGeometry height="25" width="50" x="444" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#17212F;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;align=center;" value="0..*" vertex="1">
+          <mxGeometry height="25" width="50" x="523" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#17212F;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;align=center;" value="1" vertex="1">
+          <mxGeometry height="25" width="50" x="944" y="292" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#17212F;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=16;align=center;" value="0..1" vertex="1">
+          <mxGeometry height="25" width="50" x="969" y="292" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
