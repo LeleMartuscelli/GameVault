@@ -86,3 +86,62 @@ export async function updateProfile(
 
   return handleResponse<Profile>(response)
 }
+
+
+export type ProfileImageType = 'avatar' | 'banner'
+
+const PROFILE_IMAGE_URL = `${PROFILE_API_URL}/image`
+
+// POST — Enviar foto de perfil ou banner
+export async function uploadProfileImage(
+  type: ProfileImageType,
+  file: File
+): Promise<{ imageUrl: string; updatedAt: string }> {
+  const session = await getSession()
+
+  if (!session.authenticated || !session.csrfToken) {
+    throw new Error('Sessão administrativa não encontrada.')
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(
+    `${PROFILE_IMAGE_URL}/${type}`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'X-CSRF-Token': session.csrfToken,
+      },
+      body: formData,
+    }
+  )
+
+  return handleResponse<{
+    imageUrl: string
+    updatedAt: string
+  }>(response)
+}
+
+// GET — Recuperar imagem autenticada
+export async function getProfileImage(
+  type: ProfileImageType
+): Promise<Blob | null> {
+  const response = await fetch(
+    `${PROFILE_IMAGE_URL}/${type}`,
+    {
+      credentials: 'include',
+    }
+  )
+
+  if (response.status === 404) {
+    return null
+  }
+
+  if (!response.ok) {
+    throw new Error('Não foi possível carregar a imagem.')
+  }
+
+  return response.blob()
+}

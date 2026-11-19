@@ -1,8 +1,10 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowRight,
+  Camera,
+  ImagePlus,
   Gamepad2,
   Heart,
   Monitor,
@@ -15,11 +17,14 @@ import {
 import { getGames } from '../../services/gameApi'
 import {
   getProfile,
+  getProfileImage,
   updateProfile,
+  uploadProfileImage,
 } from '../../services/profileApi'
 import type {
   Profile as ProfileData,
   UpdateProfileData,
+  ProfileImageType,
 } from '../../services/profileApi'
 import { getGameImage } from '../../data/gameImage'
 import type { Game } from '../../types/games'
@@ -29,6 +34,8 @@ import './Profile.css'
 
 function Profile() {
   const navigate = useNavigate()
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const previewUrlRef = useRef<string | null>(null)
 
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [games, setGames] = useState<Game[]>([])
@@ -39,6 +46,16 @@ function Profile() {
   const [saveError, setSaveError] = useState('')
   const [success, setSuccess] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
+  const [imageKind, setImageKind] = useState<ProfileImageType | null>(null)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [avatarSrc, setAvatarSrc] = useState<string | null>(null)
+  const [bannerSrc, setBannerSrc] = useState<string | null>(null)
+  const [imageError, setImageError] = useState('')
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageVersion, setImageVersion] = useState(0)
+
+  const profileId = profile?.id
 
   const [form, setForm] = useState<UpdateProfileData>({
     displayName: '',
@@ -85,6 +102,135 @@ function Profile() {
       active = false
     }
   }, [reloadKey])
+
+  // Busca arquivos binários com cookie de sessão e libera URLs temporárias.
+  useEffect(() => {
+    if (profileId == null) return
+
+    let active = true
+    const urls: string[] = []
+
+    async function loadImages() {
+      const imageTypes: ProfileImageType[] = ['avatar', 'banner']
+
+      for (const type of imageTypes) {
+        try {
+          const blob = await getProfileImage(type)
+          if (!active) return
+
+          const objectUrl = blob ? URL.createObjectURL(blob) : null
+          if (objectUrl) urls.push(objectUrl)
+
+          if (type === 'avatar') setAvatarSrc(objectUrl)
+          else setBannerSrc(objectUrl)
+        } catch (err) {
+          console.error(`Erro ao carregar ${type}:`, err)
+          if (!active) return
+          if (type === 'avatar') setAvatarSrc(null)
+          else setBannerSrc(null)
+        }
+      }
+    }
+
+    void loadImages()
+
+    return () => {
+      active = false
+      urls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [profileId, imageVersion])
+
+  // A prévia é criada quando a pessoa escolhe a imagem,
+  // não durante um efeito que altera estado.
+  function clearImageSelection() {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current)
+      previewUrlRef.current = null
+    }
+    setSelectedImage(null)
+    setImagePreview(null)
+  }
+
+  // Libera uma URL de prévia ainda aberta ao sair da página.
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current)
+        previewUrlRef.current = null
+      }
+    }
+  }, [])
+
+  function openImageEditor(type: ProfileImageType) {
+    setImageKind(type)
+    clearImageSelection()
+    setImageError('')
+    setSuccess('')
+  }
+
+  function closeImageEditor() {
+    if (uploadingImage) return
+    setImageKind(null)
+    clearImageSelection()
+    setImageError('')
+  }
+
+  function selectImage(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !imageKind) return
+
+    clearImageSelection()
+    const acceptedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    const maxSize = imageKind === 'avatar' ? 2 : 5
+
+    if (!acceptedTypes.includes(file.type)) {
+      setImageError('Escolha uma imagem JPG, PNG ou WebP.')
+      return
+    }
+
+    if (file.size === 0 || file.size > maxSize * 1024 * 1024) {
+      setImageError(`A imagem deve ter até ${maxSize} MB.`)
+      return
+    }
+
+    setImageError('')
+    const previewUrl = URL.createObjectURL(file)
+    previewUrlRef.current = previewUrl
+    setImagePreview(previewUrl)
+    setSelectedImage(file)
+  }
+
+  async function saveImage() {
+    if (!imageKind || !selectedImage || uploadingImage) return
+
+    setUploadingImage(true)
+    setImageError('')
+
+    try {
+      const response = await uploadProfileImage(imageKind, selectedImage)
+      setProfile((current) => {
+        if (!current) return current
+        return imageKind === 'avatar'
+          ? { ...current, avatarUrl: response.imageUrl }
+          : { ...current, bannerUrl: response.imageUrl }
+      })
+      setImageVersion((value) => value + 1)
+      setSuccess(
+        imageKind === 'avatar'
+          ? 'Foto de perfil atualizada com sucesso.'
+          : 'Banner atualizado com sucesso.'
+      )
+      setImageKind(null)
+      clearImageSelection()
+    } catch (err) {
+      setImageError(
+        err instanceof Error ? err.message : 'Não foi possível enviar a imagem.'
+      )
+    } finally {
+      setUploadingImage(false)
+    }
+  }
 
   function openEditor() {
     if (!profile) return
@@ -170,15 +316,38 @@ function Profile() {
         SEU ESPAÇO NO GAMEVAULT
       </span>
 
-      <section className="gv-profile-cover">
-        <span className="gv-profile-cover-watermark">
-          GAMEVAULT
-        </span>
+      <section className="gv-profile-cover" aria-label="Banner do perfil">
+        {bannerSrc ? (
+          <img className="gv-profile-cover-image" src={bannerSrc} alt="Banner personalizado" />
+        ) : (
+          <span className="gv-profile-cover-watermark">GAMEVAULT</span>
+        )}
+        <button
+          type="button"
+          className="gv-profile-cover-change"
+          onClick={() => openImageEditor('banner')}
+        >
+          <Camera size={17} aria-hidden="true" />
+          Alterar banner
+        </button>
       </section>
 
       <section className="gv-profile-identity">
         <div className="gv-profile-avatar">
-          <UserRound size={36} strokeWidth={1.5} />
+          {avatarSrc ? (
+            <img className="gv-profile-avatar-image" src={avatarSrc} alt="Foto de perfil" />
+          ) : (
+            <UserRound size={36} strokeWidth={1.5} aria-hidden="true" />
+          )}
+          <button
+            type="button"
+            className="gv-profile-avatar-change"
+            onClick={() => openImageEditor('avatar')}
+            aria-label="Alterar foto de perfil"
+            title="Alterar foto de perfil"
+          >
+            <Camera size={16} aria-hidden="true" />
+          </button>
         </div>
 
         <div className="gv-profile-identity-copy">
@@ -316,6 +485,84 @@ function Profile() {
           </div>
         )}
       </section>
+
+      {imageKind && (
+        <div className="gv-profile-modal-overlay">
+          <section
+            className="gv-profile-modal gv-profile-image-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="gv-profile-image-title"
+          >
+            <div className="gv-profile-modal-heading">
+              <div>
+                <span className="gv-library-eyebrow">PERSONALIZAÇÃO</span>
+                <h2 id="gv-profile-image-title">
+                  {imageKind === 'avatar' ? 'Alterar foto' : 'Alterar banner'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="gv-profile-close"
+                onClick={closeImageEditor}
+                disabled={uploadingImage}
+                aria-label="Fechar seleção de imagem"
+              >
+                <X size={21} />
+              </button>
+            </div>
+
+            <div className={`gv-profile-image-preview ${imageKind === 'avatar' ? 'is-avatar' : 'is-banner'}`}>
+              {imagePreview ? (
+                <img src={imagePreview} alt="Pré-visualização da imagem selecionada" />
+              ) : (
+                <ImagePlus size={36} aria-hidden="true" />
+              )}
+            </div>
+
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="gv-profile-file-input"
+              aria-label="Selecionar arquivo de imagem"
+              onChange={selectImage}
+              disabled={uploadingImage}
+            />
+            <button
+              type="button"
+              className="gv-profile-choose-image"
+              onClick={() => imageInputRef.current?.click()}
+              disabled={uploadingImage}
+            >
+              <ImagePlus size={17} aria-hidden="true" />
+              Escolher imagem
+            </button>
+            <p className="gv-profile-image-hint">
+              JPG, PNG ou WebP • máximo de {imageKind === 'avatar' ? 2 : 5} MB
+            </p>
+            {imageError && <p className="gv-profile-form-error" role="alert">{imageError}</p>}
+            <div className="gv-profile-modal-actions">
+              <button
+                type="button"
+                className="gv-profile-cancel"
+                onClick={closeImageEditor}
+                disabled={uploadingImage}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="gv-profile-save"
+                onClick={() => void saveImage()}
+                disabled={!selectedImage || uploadingImage}
+              >
+                {uploadingImage ? 'Enviando...' : 'Salvar imagem'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
 
       {editing && (
         <div className="gv-profile-modal-overlay">
