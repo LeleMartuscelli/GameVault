@@ -11,6 +11,7 @@ import GameDetails from './pages/GameDetails/GameDetails'
 import EditGame from './pages/EditGame/EditGame'
 import Favorites from './pages/Favorites/Favorites'
 import Login from './pages/Login/Login'
+import Profile from './pages/Profile/Profile'
 
 import './App.css'
 
@@ -18,7 +19,7 @@ import './App.css'
 function AdminRoute() {
   const { isAdmin, loading } = useAuth()
 
-  // Aguarda a verificação da sessão antes de decidir o acesso
+  // Aguarda a verificação da sessão
   if (loading) {
     return (
       <main
@@ -66,6 +67,7 @@ function App() {
           <Route element={<AdminRoute />}>
             <Route path="/adicionar" element={<AddGame />} />
             <Route path="/editar/:id" element={<EditGame />} />
+            <Route path="/perfil" element={<Profile />} />
           </Route>
 
         </Route>

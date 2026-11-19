@@ -45,6 +45,7 @@ function Navbar() {
 
   // REFERÊNCIAS
   const settingsRef = useRef<HTMLDivElement>(null)
+  const profileButtonRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
 
   // APLICAR TEMA
@@ -85,7 +86,8 @@ function Navbar() {
 
       if (
         settingsRef.current &&
-        !settingsRef.current.contains(target)
+        !settingsRef.current.contains(target) &&
+        !profileButtonRef.current?.contains(target)
       ) {
         setSettingsOpen(false)
       }
@@ -157,17 +159,23 @@ function Navbar() {
     navigate('/adicionar')
   }
 
-  function handleProfileClick() {
+  
+
+function handleProfileClick() {
+  if (loading) return
+
+  if (!isAdmin) {
     closeMenus()
-
-    if (loading) return
-
-    if (isAdmin) {
-      setSettingsOpen(true)
-    } else {
-      navigate('/login')
-    }
+    navigate('/login')
+    return
   }
+
+  setSettingsOpen((open) => !open)
+  setSearchOpen(false)
+  setMobileMenuOpen(false)
+}
+
+
 
   async function handleLogout() {
     if (loggingOut || loading || !isAdmin) return
@@ -177,7 +185,7 @@ function Navbar() {
     try {
       await logout()
       closeMenus()
-      navigate('/')
+      navigate('/login', { replace: true })
     } catch (error) {
       console.error('Erro ao encerrar sessão:', error)
       window.alert('Não foi possível encerrar a sessão.')
@@ -375,6 +383,21 @@ function Navbar() {
                   <span>Personalize sua experiência</span>
                 </div>
 
+                {/* ACESSO AO PERFIL */}
+                {!loading && isAdmin && (
+                  <button
+                    type="button"
+                    className="gv-navbar-settings-item"
+                    onClick={() => {
+                      closeMenus()
+                      navigate('/perfil')
+                    }}
+                  >
+                    <UserRound size={18} aria-hidden="true" />
+                    <span>Meu perfil</span>
+                  </button>
+                )}
+
                 {/* APENAS ADMINISTRADORA */}
                 {!loading && isAdmin && (
                   <button
@@ -444,6 +467,9 @@ function Navbar() {
           <button
             type="button"
             className="gv-navbar-profile"
+            ref={profileButtonRef}
+            aria-expanded={settingsOpen && isAdmin}
+            aria-controls="gv-navbar-settings-menu"
             aria-label={
               loading
                 ? 'Verificando sessão'

@@ -1,0 +1,453 @@
+
+/* GAMEVAULT V2 — PERFIL */
+
+.gv-profile {
+  padding-bottom: 80px;
+}
+
+.gv-profile-eyebrow {
+  margin: 22px 0 18px;
+  color: var(--text-secondary);
+  font-size: 0.69rem;
+  font-weight: 750;
+  letter-spacing: 0.17em;
+}
+
+/* BANNER */
+
+.gv-profile-cover {
+  position: relative;
+  height: clamp(210px, 27vw, 340px);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      ellipse at 75% 40%,
+      rgba(110, 119, 135, 0.26),
+      transparent 55%
+    ),
+    linear-gradient(
+      125deg,
+      #101318 5%,
+      #242a33 52%,
+      #0c0e12 100%
+    );
+}
+
+.gv-profile-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.3),
+    transparent 60%
+  );
+}
+
+.gv-profile-cover-watermark {
+  position: absolute;
+  right: 28px;
+  bottom: 15px;
+  color: rgba(255, 255, 255, 0.08);
+  font-size: clamp(3rem, 9vw, 9rem);
+  font-weight: 800;
+  letter-spacing: -0.08em;
+  white-space: nowrap;
+}
+
+/* IDENTIDADE */
+
+.gv-profile-identity {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  margin-top: -50px;
+  padding: 0 28px;
+  position: relative;
+  z-index: 1;
+}
+
+.gv-profile-avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 112px;
+  height: 112px;
+  border: 5px solid var(--bg-primary);
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.gv-profile-identity-copy {
+  padding-top: 58px;
+}
+
+.gv-profile-identity h1 {
+  margin: 0 0 5px;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 750;
+  letter-spacing: -0.06em;
+}
+
+.gv-profile-handle {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.gv-profile-identity p {
+  max-width: 590px;
+  margin: 14px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+/* SEÇÕES */
+
+.gv-profile-section {
+  margin-top: 65px;
+}
+
+.gv-profile-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.gv-profile-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  font-weight: 750;
+  letter-spacing: -0.055em;
+}
+
+/* IDENTIDADE GAMER */
+
+.gv-profile-preferences {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.gv-profile-preference {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  min-width: 0;
+  padding: 25px 22px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  background: var(--bg-secondary);
+}
+
+.gv-profile-preference > svg {
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+.gv-profile-preference div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.gv-profile-preference span {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+}
+
+.gv-profile-preference strong {
+  color: var(--text-primary);
+  font-size: 0.98rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* FAVORITOS */
+
+.gv-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
+.gv-profile-favorite-icon {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 50%;
+  background: rgba(9,11,14,0.68);
+  color: #ff5b66;
+  backdrop-filter: blur(10px);
+}
+
+.gv-profile-game-hours {
+  margin: 0 0 18px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 900px) {
+  .gv-profile-preferences {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .gv-profile-cover {
+    height: 200px;
+  }
+
+  .gv-profile-identity {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: -43px;
+    padding: 0 16px;
+  }
+
+  .gv-profile-avatar {
+    width: 92px;
+    height: 92px;
+  }
+
+  .gv-profile-identity-copy {
+    padding-top: 0;
+  }
+
+  .gv-profile-section {
+    margin-top: 45px;
+  }
+
+  .gv-profile-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .gv-profile-preference {
+    padding: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gv-profile *,
+  .gv-profile *::before,
+  .gv-profile *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+
+/* EDIÇÃO DO PERFIL */
+
+.gv-profile-identity {
+  flex-wrap: wrap;
+}
+
+.gv-profile-identity-copy {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.gv-profile-edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.83rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.gv-profile-success {
+  margin: 24px 28px 0;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.gv-profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+}
+
+.gv-profile-modal {
+  width: min(100%, 540px);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 30px;
+  border: 1px solid var(--border-color);
+  border-radius: 22px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.3);
+}
+
+.gv-profile-modal-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.gv-profile-modal-heading h2 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.055em;
+}
+
+.gv-profile-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.gv-profile-modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.gv-profile-modal form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.gv-profile-modal input,
+.gv-profile-modal textarea,
+.gv-profile-modal select {
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 13px;
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.gv-profile-modal textarea {
+  resize: vertical;
+}
+
+.gv-profile-modal input:focus-visible,
+.gv-profile-modal textarea:focus-visible,
+.gv-profile-modal select:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.gv-profile-form-error {
+  margin: 0;
+  color: #ff6470;
+  font-size: 0.83rem;
+}
+
+.gv-profile-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.gv-profile-cancel,
+.gv-profile-save {
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.83rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.gv-profile-cancel {
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.gv-profile-save {
+  border: 1px solid var(--text-primary);
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.gv-profile-modal button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@media (max-width: 700px) {
+  .gv-profile-identity {
+    align-items: flex-start;
+  }
+
+  .gv-profile-edit-button {
+    width: 100%;
+  }
+
+  .gv-profile-modal {
+    padding: 22px;
+  }
+
+  .gv-profile-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .gv-profile-cancel,
+  .gv-profile-save {
+    width: 100%;
+  }
+}
