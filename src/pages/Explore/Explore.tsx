@@ -1,426 +1,1034 @@
-import { useEffect, useRef, useState } from 'react'
 
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
-
-import { ArrowRight, ChevronLeft, ChevronRight, Gamepad2, Search, X } from 'lucide-react'
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Gamepad2,
+  Search,
+  X,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/useAuth'
 
 import './Explore.css'
 
+type IgdbGame = {
+  id: number
+  name: string
+  slug: string
+  description: string
+  released: string | null
+  imageUrl: string | null
+  rating: number | null
+  ratingCount: number
+  genres: { id: number; name: string }[]
+  platforms: { id: number; name: string }[]
+}
 
+type SectionKey = 'popular' | 'recent' | 'upcoming'
 
-type RawgItem = { id: number; name: string; slug: string; released: string | null; backgroundImage: string | null; rating: number; metacritic: number | null; genres: { id: number; name: string; slug: string }[]; platforms: { id: number; name: string; slug: string }[] }
+type CatalogResponse = {
+  success: boolean
+  results: IgdbGame[]
+  count: number
+  hasNext?: boolean
+}
 
-type RawgDetail = RawgItem & { descriptionRaw: string; website: string | null; developers: { id: number; name: string }[]; publishers: { id: number; name: string }[] }
+type GameDetailResponse = {
+  success: boolean
+  game: IgdbGame
+}
 
-type SearchResponse = { count: number; hasNext: boolean; page: number; results: RawgItem[] }
+// Compatível com VITE_API_URL terminando em /api/games.
+const configuredApiUrl = String(
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_BASE_URL ||
+  'http://localhost:3000'
+)
 
+const API_BASE = configuredApiUrl
+  .replace(/\/+$/, '')
+  .replace(/\/api(?:\/games)?$/, '')
 
-
-// Em produção, defina VITE_API_URL com a URL pública do backend Render (sem /api no final).
-
-// A chave RAWG_API_KEY permanece somente no servidor Express.
-
-// Aceita VITE_API_URL tanto na raiz quanto terminando em /api/games.
-// Exemplo: http://localhost:3000/api/games -> http://localhost:3000
-const configuredApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
-const API_BASE = configuredApiUrl.replace(/\/+$/, '').replace(/\/api(?:\/games)?$/, '')
+const SECTIONS: {
+  key: SectionKey
+  label: string
+  heading: string
+  description: string
+}[] = [
+  {
+    key: 'popular',
+    label: 'Em alta',
+    heading: 'Jogos em alta',
+    description: 'Títulos recentes que despertaram o interesse dos jogadores.',
+  },
+  {
+    key: 'recent',
+    label: 'Lançamentos',
+    heading: 'Lançamentos recentes',
+    description: 'Jogos dos últimos meses, selecionados pela relevância na IGDB.',
+  },
+  {
+    key: 'upcoming',
+    label: 'Em breve',
+    heading: 'Próximos lançamentos',
+    description: 'O que está chegando ao universo dos games.',
+  },
+]
 
 const GENRES = [
-
-  { label: 'Todos', id: '' }, { label: 'Ação', id: '4' }, { label: 'Aventura', id: '3' },
-
-  { label: 'RPG', id: '5' }, { label: 'Indie', id: '51' },
-
+  'Todos',
+  'Ação',
+  'Aventura',
+  'RPG',
+  'Indie',
+  'Tiro',
+  'Estratégia',
 ]
 
 const PLATFORMS = [
-
-  { label: 'Todas', id: '' }, { label: 'PC', id: '4' },
-
-  { label: 'PlayStation', id: '187,18,16,15,27' },
-
-  { label: 'Xbox', id: '1,186,14,80' }, { label: 'Switch', id: '7' },
-
+  'Todas',
+  'PC',
+  'PlayStation',
+  'Xbox',
+  'Nintendo',
 ]
 
 const SORTS = [
-
-  { label: 'Destaques', value: '-added' }, { label: 'Mais recentes', value: '-released' },
-
-  { label: 'Mais antigos', value: 'released' }, { label: 'A–Z', value: 'name' },
-
-  { label: 'Melhor avaliação', value: '-rating' },
-
+  { value: 'relevance', label: 'Relevância' },
+  { value: 'rating', label: 'Melhor avaliação' },
+  { value: 'recent', label: 'Mais recentes' },
+  { value: 'oldest', label: 'Mais antigos' },
+  { value: 'az', label: 'A–Z' },
 ]
 
-const currentYear = new Date().getFullYear()
-
-
-
-async function fetchApi<T>(path: string, signal: AbortSignal): Promise<T> {
-
-  const response = await fetch(`${API_BASE}${path}`, { signal, credentials: 'include' })
+async function fetchApi<T>(
+  path: string,
+  signal: AbortSignal
+): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    signal,
+    credentials: 'include',
+  })
 
   if (!response.ok) {
+    let message = 'Não foi possível consultar a IGDB.'
 
-    let message = 'Não foi possível consultar o catálogo.'
+    try {
+      const body: {
+        message?: string
+        error?: string
+      } = await response.json()
 
-    try { const data: { error?: string } = await response.json(); if (data.error) message = data.error } catch { /* resposta sem JSON */ }
+      message = body.message || body.error || message
+    } catch {
+      // Mantém a mensagem padrão.
+    }
 
     throw new Error(message)
-
   }
 
   return response.json() as Promise<T>
-
 }
 
+function matchesGenre(
+  game: IgdbGame,
+  chosen: string
+): boolean {
+  if (chosen === 'Todos') return true
 
+  const names = game.genres
+    .map((item) => item.name.toLowerCase())
+    .join(' ')
+
+  if (chosen === 'Aventura') {
+    return names.includes('adventure')
+  }
+
+  if (chosen === 'RPG') {
+    return names.includes('role-playing') ||
+      names.includes('rpg')
+  }
+
+  if (chosen === 'Tiro') {
+    return names.includes('shooter')
+  }
+
+  if (chosen === 'Estratégia') {
+    return names.includes('strategy')
+  }
+
+  if (chosen === 'Ação') {
+    return /action|shooter|fighting|hack and slash|beat.em up/.test(names)
+  }
+
+  return names.includes(chosen.toLowerCase())
+}
+
+function matchesPlatform(
+  game: IgdbGame,
+  chosen: string
+): boolean {
+  if (chosen === 'Todas') return true
+
+  const names = game.platforms
+    .map((item) => item.name.toLowerCase())
+    .join(' ')
+
+  if (chosen === 'PC') {
+    return names.includes('pc (microsoft windows)') ||
+      names.includes('windows')
+  }
+
+  if (chosen === 'Nintendo') {
+    return names.includes('nintendo') ||
+      names.includes('switch')
+  }
+
+  return names.includes(chosen.toLowerCase())
+}
 
 function Explore() {
   const navigate = useNavigate()
+
   const { isAdmin, loading: authLoading } = useAuth()
 
   const catalogRef = useRef<HTMLElement>(null)
-
   const featuredRef = useRef<HTMLElement>(null)
 
+  const [section, setSection] = useState<SectionKey>('popular')
   const [query, setQuery] = useState('')
 
-  const [genre, setGenre] = useState('')
-
-  const [platform, setPlatform] = useState('')
-
+  const [genre, setGenre] = useState('Todos')
+  const [platform, setPlatform] = useState('Todas')
   const [year, setYear] = useState('')
-
-  const [sort, setSort] = useState('-added')
+  const [sort, setSort] = useState('relevance')
 
   const [page, setPage] = useState(1)
 
-  const [games, setGames] = useState<RawgItem[]>([])
-
-  const [total, setTotal] = useState(0)
-
+  const [games, setGames] = useState<IgdbGame[]>([])
   const [hasNext, setHasNext] = useState(false)
 
   const [loading, setLoading] = useState(true)
-
   const [error, setError] = useState('')
-
   const [retry, setRetry] = useState(0)
 
   const [heroIndex, setHeroIndex] = useState(0)
 
-  const [selected, setSelected] = useState<RawgItem | null>(null)
-
-  const [detail, setDetail] = useState<RawgDetail | null>(null)
+  const [selected, setSelected] = useState<IgdbGame | null>(null)
+  const [detail, setDetail] = useState<IgdbGame | null>(null)
 
   const [detailLoading, setDetailLoading] = useState(false)
-
   const [detailError, setDetailError] = useState('')
 
+  const searching = query.trim().length > 0
 
-
-  // A busca espera a digitação terminar; alterações de filtros consultam a API imediatamente.
+  // CONSULTA AO CATÁLOGO IGDB
 
   useEffect(() => {
-
     const controller = new AbortController()
 
-    const timer = window.setTimeout(async () => {
+    const timeout = window.setTimeout(() => {
+      void (async () => {
+        setLoading(true)
+        setError('')
 
-      setLoading(true)
+        try {
+          const path = searching
+            ? `/api/igdb/search?q=${encodeURIComponent(query.trim())}&page=${page}`
+            : `/api/igdb/sections/${section}`
 
-      setError('')
+          const data = await fetchApi<CatalogResponse>(
+            path,
+            controller.signal
+          )
 
-      const params = new URLSearchParams({ page: String(page), page_size: '20', ordering: sort })
+          if (controller.signal.aborted) return
 
-      if (query.trim()) params.set('search', query.trim())
+          setGames(data.results || [])
+          setHasNext(searching && Boolean(data.hasNext))
+          setHeroIndex(0)
+        } catch (err) {
+          if (controller.signal.aborted) return
 
-      if (genre) params.set('genres', genre)
+          setGames([])
+          setHasNext(false)
 
-      if (platform) params.set('platforms', platform)
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Erro ao carregar jogos.'
+          )
+        } finally {
+          if (!controller.signal.aborted) {
+            setLoading(false)
+          }
+        }
+      })()
+    }, searching ? 400 : 0)
 
-      if (year) params.set('year', year)
+    return () => {
+      window.clearTimeout(timeout)
+      controller.abort()
+    }
+  }, [section, query, page, retry, searching])
 
-      try {
-
-        const data = await fetchApi<SearchResponse>(`/api/explore/games?${params.toString()}`, controller.signal)
-
-        if (controller.signal.aborted) return
-
-        setGames(data.results)
-
-        setTotal(data.count)
-
-        setHasNext(data.hasNext)
-
-        setHeroIndex(0)
-
-      } catch (err) {
-
-        if (controller.signal.aborted) return
-
-        setGames([])
-
-        setError(err instanceof Error ? err.message : 'Erro ao carregar jogos.')
-
-      } finally {
-
-        if (!controller.signal.aborted) setLoading(false)
-
-      }
-
-    }, query ? 400 : 0)
-
-    return () => { window.clearTimeout(timer); controller.abort() }
-
-  }, [query, genre, platform, year, sort, page, retry])
-
-
-
-  // Detalhes somente ao abrir um jogo, sem consultar a API para cada card.
+  // DETALHES DO JOGO
 
   useEffect(() => {
-
     if (!selected) return
 
     const controller = new AbortController()
 
-    void fetchApi<RawgDetail>(`/api/explore/games/${selected.id}`, controller.signal)
-
-      .then(setDetail)
-
-      .catch((err) => { if (!controller.signal.aborted) setDetailError(err instanceof Error ? err.message : 'Falha ao carregar detalhes.') })
-
-      .finally(() => { if (!controller.signal.aborted) setDetailLoading(false) })
+    void fetchApi<GameDetailResponse>(
+      `/api/igdb/games/${selected.id}`,
+      controller.signal
+    )
+      .then((data) => {
+        if (!controller.signal.aborted) {
+          setDetail(data.game)
+        }
+      })
+      .catch((err) => {
+        if (!controller.signal.aborted) {
+          setDetailError(
+            err instanceof Error
+              ? err.message
+              : 'Falha ao carregar detalhes.'
+          )
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setDetailLoading(false)
+        }
+      })
 
     return () => controller.abort()
-
   }, [selected])
 
-
-
-  function openDetails(game: RawgItem) {
-
-    setDetail(null)
-
-    setDetailError('')
-
-    setDetailLoading(true)
-
-    setSelected(game)
-
-  }
-
-
-
-  function closeDetails() {
-
-    setSelected(null)
-
-    setDetailLoading(false)
-
-  }
-
-
-
-  // Permite fechar a janela de detalhes com Escape.
+  // FECHAR MODAL COM ESCAPE
 
   useEffect(() => {
-
     if (!selected) return
 
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') setSelected(null) }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setSelected(null)
+      }
+    }
 
     window.addEventListener('keydown', onKeyDown)
 
-    return () => window.removeEventListener('keydown', onKeyDown)
-
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
   }, [selected])
 
+  // FILTROS LOCAIS DOS JOGOS CARREGADOS
 
+  const years = useMemo(
+    () =>
+      [
+        ...new Set(
+          games
+            .map((game) => game.released?.slice(0, 4))
+            .filter(
+              (value): value is string => Boolean(value)
+            )
+        ),
+      ].sort((a, b) => b.localeCompare(a)),
+    [games]
+  )
 
-  const heroGames = games.filter((game) => Boolean(game.backgroundImage)).slice(0, 3)
+  const visibleGames = useMemo(() => {
+    const result = games.filter(
+      (game) =>
+        matchesGenre(game, genre) &&
+        matchesPlatform(game, platform) &&
+        (!year || game.released?.startsWith(year))
+    )
 
-  const hero = heroGames[heroIndex % Math.max(1, heroGames.length)]
+    if (sort === 'rating') {
+      return result.sort(
+        (a, b) => (b.rating ?? -1) - (a.rating ?? -1)
+      )
+    }
 
-  const goTo = (ref: RefObject<HTMLElement | null>) => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (sort === 'recent') {
+      return result.sort((a, b) =>
+        (b.released || '').localeCompare(a.released || '')
+      )
+    }
 
-  const resetPage = (setter: (value: string) => void, value: string) => { setter(value); setPage(1) }
+    if (sort === 'oldest') {
+      return result.sort((a, b) =>
+        (a.released || '').localeCompare(b.released || '')
+      )
+    }
 
-  const clearFilters = () => { setQuery(''); setGenre(''); setPlatform(''); setYear(''); setSort('-added'); setPage(1) }
+    if (sort === 'az') {
+      return result.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      )
+    }
 
+    return result
+  }, [games, genre, platform, year, sort])
 
+  const heroGames = games
+    .filter((game) => Boolean(game.imageUrl))
+    .slice(0, 3)
+
+  const hero = heroGames[
+    heroIndex % Math.max(1, heroGames.length)
+  ]
+
+  const activeSection =
+    SECTIONS.find((item) => item.key === section) ||
+    SECTIONS[0]
+
+  const goTo = (
+    ref: RefObject<HTMLElement | null>
+  ) => {
+    ref.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
+  function switchSection(next: SectionKey) {
+    setSection(next)
+    setQuery('')
+    setPage(1)
+    setGenre('Todos')
+    setPlatform('Todas')
+    setYear('')
+    setSort('relevance')
+  }
+
+  function clearFilters() {
+    setGenre('Todos')
+    setPlatform('Todas')
+    setYear('')
+    setSort('relevance')
+  }
+
+  function openDetails(game: IgdbGame) {
+    setDetail(null)
+    setDetailError('')
+    setDetailLoading(true)
+    setSelected(game)
+  }
+
+  function closeDetails() {
+    setSelected(null)
+    setDetailLoading(false)
+  }
+
+  // IMPORTAÇÃO PARA O CADASTRO EXISTENTE
+
+  function importGame() {
+    if (!selected) return
+
+    if (!isAdmin) {
+      navigate('/login')
+      return
+    }
+
+    navigate('/adicionar', {
+      state: {
+        rawgImport: {
+          source: 'igdb',
+          id: selected.id,
+          title: selected.name,
+          platforms: selected.platforms.map(
+            (item) => item.name
+          ),
+          imageUrl: selected.imageUrl,
+        },
+      },
+    })
+  }
 
   return (
-
     <main className="gv-explore">
 
-      <section className="gv-explore-hero" aria-label="Destaque do catálogo">
+      {/* BANNER */}
 
-        {hero?.backgroundImage && <img key={hero.id} src={hero.backgroundImage} alt="" className="gv-explore-hero-art" />}
+      <section
+        className="gv-explore-hero"
+        aria-label="Destaque do catálogo"
+      >
+        {hero?.imageUrl && (
+          <img
+            key={hero.id}
+            src={hero.imageUrl}
+            alt=""
+            className="gv-explore-hero-art"
+          />
+        )}
 
         <div className="gv-explore-hero-wash" />
 
         <div className="gv-explore-hero-copy">
-
-          <span className="gv-explore-eyebrow">EXPLORAR JOGOS</span>
+          <span className="gv-explore-eyebrow">
+            EXPLORAR JOGOS
+          </span>
 
           <h1>Descubra novos mundos.</h1>
 
-          <p>Explore novos títulos, encontre histórias incríveis e expanda sua coleção.</p>
+          <p>
+            Conheça lançamentos, descubra novas
+            histórias e expanda sua coleção.
+          </p>
 
           <div className="gv-explore-hero-actions">
+            <button
+              type="button"
+              className="gv-explore-primary"
+              onClick={() => goTo(catalogRef)}
+            >
+              Explorar catálogo
+              <ArrowRight size={17} />
+            </button>
 
-            <button type="button" className="gv-explore-primary" onClick={() => goTo(catalogRef)}>Explorar catálogo <ArrowRight size={17} /></button>
-
-            <button type="button" className="gv-explore-ghost" onClick={() => goTo(featuredRef)}>Ver destaques</button>
-
+            <button
+              type="button"
+              className="gv-explore-ghost"
+              onClick={() => goTo(featuredRef)}
+            >
+              Ver jogos
+            </button>
           </div>
-
         </div>
 
-        {hero && <div className="gv-explore-hero-game">{hero.name}</div>}
-
-        {heroGames.length > 1 && <div className="gv-explore-hero-controls">
-
-          <button type="button" aria-label="Destaque anterior" onClick={() => setHeroIndex((i) => (i + heroGames.length - 1) % heroGames.length)}><ChevronLeft size={19} /></button>
-
-          <div className="gv-explore-hero-dots" aria-label="Destaques disponíveis">
-
-            {heroGames.map((game, index) => <button type="button" key={game.id} className={index === heroIndex ? 'is-active' : ''} aria-label={`Mostrar destaque ${index + 1}`} aria-pressed={index === heroIndex} onClick={() => setHeroIndex(index)} />)}
-
+        {hero && (
+          <div className="gv-explore-hero-game">
+            {hero.name}
           </div>
+        )}
 
-          <button type="button" aria-label="Próximo destaque" onClick={() => setHeroIndex((i) => (i + 1) % heroGames.length)}><ChevronRight size={19} /></button>
+        {heroGames.length > 1 && (
+          <div className="gv-explore-hero-controls">
+            <button
+              type="button"
+              aria-label="Destaque anterior"
+              onClick={() =>
+                setHeroIndex(
+                  (index) =>
+                    (index + heroGames.length - 1) %
+                    heroGames.length
+                )
+              }
+            >
+              <ChevronLeft size={19} />
+            </button>
 
-        </div>}
+            <div className="gv-explore-hero-dots">
+              {heroGames.map((game, index) => (
+                <button
+                  type="button"
+                  key={game.id}
+                  className={
+                    index === heroIndex ? 'is-active' : ''
+                  }
+                  aria-label={`Mostrar destaque ${index + 1}`}
+                  aria-pressed={index === heroIndex}
+                  onClick={() => setHeroIndex(index)}
+                />
+              ))}
+            </div>
 
+            <button
+              type="button"
+              aria-label="Próximo destaque"
+              onClick={() =>
+                setHeroIndex(
+                  (index) =>
+                    (index + 1) % heroGames.length
+                )
+              }
+            >
+              <ChevronRight size={19} />
+            </button>
+          </div>
+        )}
       </section>
 
+      {/* PESQUISA E FILTROS */}
 
-
-      <section className="gv-explore-discovery" ref={catalogRef} aria-label="Pesquisar catálogo">
-
+      <section
+        className="gv-explore-discovery"
+        ref={catalogRef}
+        aria-label="Pesquisar jogos"
+      >
         <div className="gv-explore-filters">
 
-          <label className="gv-explore-search"><Search size={19} /><input value={query} onChange={(event) => resetPage(setQuery, event.target.value)} placeholder="Buscar jogos por título..." aria-label="Pesquisar jogos" />{query && <button type="button" onClick={() => resetPage(setQuery, '')} aria-label="Limpar pesquisa"><X size={16} /></button>}</label>
+          <label className="gv-explore-search">
+            <Search size={19} />
 
-          <label className="gv-explore-select"><span>Gênero</span><select aria-label="Filtrar por gênero" value={genre} onChange={(e) => resetPage(setGenre, e.target.value)}>{GENRES.map((g) => <option key={g.label} value={g.id}>{g.label}</option>)}</select></label>
+            <input
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value)
+                setPage(1)
+              }}
+              placeholder="Buscar jogos na IGDB..."
+              aria-label="Pesquisar jogos"
+            />
 
-          <label className="gv-explore-select"><span>Plataforma</span><select aria-label="Filtrar por plataforma" value={platform} onChange={(e) => resetPage(setPlatform, e.target.value)}>{PLATFORMS.map((p) => <option key={p.label} value={p.id}>{p.label}</option>)}</select></label>
+            {query && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery('')
+                  setPage(1)
+                }}
+                aria-label="Limpar pesquisa"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </label>
 
-          <label className="gv-explore-select"><span>Ano</span><select aria-label="Filtrar por ano" value={year} onChange={(e) => resetPage(setYear, e.target.value)}><option value="">Todos</option>{Array.from({ length: 27 }, (_, i) => currentYear + 2 - i).map((y) => <option key={y} value={y}>{y}</option>)}</select></label>
+          <label className="gv-explore-select">
+            <span>Gênero</span>
+            <select
+              value={genre}
+              onChange={(event) =>
+                setGenre(event.target.value)
+              }
+            >
+              {GENRES.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
 
-          <label className="gv-explore-select"><span>Ordenar</span><select aria-label="Ordenar jogos" value={sort} onChange={(e) => resetPage(setSort, e.target.value)}>{SORTS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select></label>
+          <label className="gv-explore-select">
+            <span>Plataforma</span>
+            <select
+              value={platform}
+              onChange={(event) =>
+                setPlatform(event.target.value)
+              }
+            >
+              {PLATFORMS.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
 
+          <label className="gv-explore-select">
+            <span>Ano</span>
+            <select
+              value={year}
+              onChange={(event) =>
+                setYear(event.target.value)
+              }
+            >
+              <option value="">Todos</option>
+              {years.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="gv-explore-select">
+            <span>Ordenar</span>
+            <select
+              value={sort}
+              onChange={(event) =>
+                setSort(event.target.value)
+              }
+            >
+              {SORTS.map((item) => (
+                <option
+                  key={item.value}
+                  value={item.value}
+                >
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
-        <div className="gv-explore-genres" aria-label="Categorias de jogos">{GENRES.map((g) => <button type="button" key={g.label} className={genre === g.id ? 'is-selected' : ''} aria-pressed={genre === g.id} onClick={() => resetPage(setGenre, g.id)}>{g.label === 'Todos' && <Gamepad2 size={16} />}{g.label}</button>)}</div>
+        {/* CATEGORIAS PRINCIPAIS */}
 
+        <div
+          className="gv-explore-genres"
+          aria-label="Seções do catálogo"
+        >
+          {SECTIONS.map((item) => (
+            <button
+              type="button"
+              key={item.key}
+              className={
+                !searching && section === item.key
+                  ? 'is-selected'
+                  : ''
+              }
+              aria-pressed={
+                !searching && section === item.key
+              }
+              onClick={() => switchSection(item.key)}
+            >
+              {item.key === 'popular' && (
+                <Gamepad2 size={16} />
+              )}
+              {item.label}
+            </button>
+          ))}
+        </div>
       </section>
 
+      {/* CATÁLOGO */}
 
+      <section
+        className="gv-explore-section"
+        ref={featuredRef}
+      >
+        <div className="gv-explore-section-heading">
+          <div>
+            <span className="gv-explore-eyebrow">
+              CATÁLOGO IGDB
+            </span>
 
-      <section className="gv-explore-section" ref={featuredRef}>
+            <h2>
+              {searching
+                ? 'Resultados da pesquisa'
+                : activeSection.heading}
+            </h2>
 
-        <div className="gv-explore-section-heading"><div><span className="gv-explore-eyebrow">CATÁLOGO RAWG</span><h2>Seleção em destaque</h2><p>Jogos para conhecer e adicionar à sua coleção futuramente.</p></div><span className="gv-explore-count">{loading ? 'Buscando...' : `${total.toLocaleString('pt-BR')} resultados`}</span></div>
+            <p>
+              {searching
+                ? `Busca por “${query.trim()}”`
+                : activeSection.description}
+            </p>
+          </div>
 
-        {error && <div className="gv-explore-empty" role="alert">{error} <button type="button" onClick={() => setRetry((v) => v + 1)}>Tentar novamente</button></div>}
+          <span className="gv-explore-count">
+            {loading
+              ? 'Buscando...'
+              : `${visibleGames.length} de ${games.length} exibidos`}
+          </span>
+        </div>
 
-        {!error && loading && <div className="gv-explore-loading" role="status">Carregando jogos do catálogo...</div>}
-
-        {!error && !loading && (games.length ? <>
-
-          <div className="gv-explore-grid">{games.map((game) => <button type="button" className="gv-explore-card" key={game.id} onClick={() => openDetails(game)} aria-label={`Ver detalhes de ${game.name}`}>
-
-            <div className="gv-explore-cover">{game.backgroundImage ? <img src={game.backgroundImage} alt="" loading="lazy" /> : <div className="gv-explore-cover-fallback"><Gamepad2 size={28} /><span>SEM CAPA</span></div>}<span className="gv-explore-card-action">Ver detalhes <ArrowRight size={15} /></span></div>
-
-            <div className="gv-explore-card-meta"><strong>{game.name}</strong><span>{game.genres.slice(0, 2).map((g) => g.name).join(' · ') || 'Jogo'}{game.released ? ` · ${game.released.slice(0, 4)}` : ''}</span></div>
-
-          </button>)}</div>
-
-          <nav className="gv-explore-pagination" aria-label="Páginas do catálogo">
-
-            <button type="button" disabled={page === 1} onClick={() => { setPage((p) => Math.max(1, p - 1)); goTo(featuredRef) }}>Anterior</button>
-
-            <span>Página {page}</span>
-
-            <button type="button" disabled={!hasNext} onClick={() => { setPage((p) => p + 1); goTo(featuredRef) }}>Próxima <ArrowRight size={15}/></button>
-
-          </nav>
-
-        </> : <div className="gv-explore-empty">Nenhum jogo encontrado com esses filtros. <button type="button" onClick={clearFilters}>Limpar filtros</button></div>)}
-
-      </section>
-
-
-
-      <section className="gv-explore-editorial" aria-label="Destaque editorial"><span className="gv-explore-eyebrow">DESCUBRA MAIS</span><h2>Mais do que jogar.<br />Descobrir novas histórias.</h2><p>Explore títulos fora da sua coleção e encontre sua próxima grande aventura.</p><button type="button" onClick={() => goTo(catalogRef)}>Conhecer o catálogo <ArrowRight size={17}/></button></section>
-
-      <p className="gv-explore-demo-notice">Dados e imagens fornecidos por <a href="https://rawg.io/" target="_blank" rel="noopener noreferrer">RAWG.io</a>. A importação de jogos para sua Biblioteca será implementada na próxima etapa.</p>
-
-
-
-      {selected && <div className="gv-explore-overlay" onClick={closeDetails}>
-
-        <section className="gv-explore-dialog" role="dialog" aria-modal="true" aria-labelledby="gv-explore-dialog-title" onClick={(e) => e.stopPropagation()}>
-
-          <button type="button" className="gv-explore-dialog-close" onClick={closeDetails} aria-label="Fechar detalhes"><X size={21}/></button>
-
-          {selected.backgroundImage && <img className="gv-explore-detail-art" src={selected.backgroundImage} alt="" />}
-
-          <span className="gv-explore-eyebrow">SOBRE O JOGO</span>
-
-          <h2 id="gv-explore-dialog-title">{selected.name}</h2>
-
-          {detailLoading && <p role="status">Carregando detalhes...</p>}
-
-          {detailError && <p role="alert">{detailError}</p>}
-
-          {detail?.descriptionRaw && <p>{detail.descriptionRaw}</p>}
-
-          <dl>
-
-            <div><dt>Gêneros</dt><dd>{selected.genres.map((g) => g.name).join(', ') || 'Não informado'}</dd></div>
-
-            <div><dt>Plataformas</dt><dd>{selected.platforms.map((p) => p.name).join(', ') || 'Não informado'}</dd></div>
-
-            <div><dt>Lançamento</dt><dd>{selected.released || 'Não informado'}</dd></div>
-
-            <div><dt>Avaliação RAWG</dt><dd>{selected.rating ? `${selected.rating.toFixed(2)}/5` : 'Não avaliado'}</dd></div>
-
-            {detail?.developers?.length ? <div><dt>Desenvolvedora</dt><dd>{detail.developers.map((d) => d.name).join(', ')}</dd></div> : null}
-
-          </dl>
-
-          <p className="gv-explore-dialog-note">Ao adicionar, você poderá definir plataforma, status, progresso e favoritos.</p>
-          <button
-            type="button"
-            className="gv-explore-primary"
-            disabled={authLoading}
-            onClick={() => navigate(isAdmin ? '/adicionar' : '/login', isAdmin ? {
-              state: { rawgImport: { id: selected.id, title: selected.name, platforms: selected.platforms.map((p) => p.name) } }
-            } : undefined)}
+        {error && (
+          <div
+            className="gv-explore-empty"
+            role="alert"
           >
-            {isAdmin ? 'Adicionar à Biblioteca' : 'Entrar para adicionar'} <ArrowRight size={17} />
-          </button>
+            {error}
+            <button
+              type="button"
+              onClick={() =>
+                setRetry((value) => value + 1)
+              }
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
 
-          <button type="button" className="gv-explore-primary" onClick={closeDetails}>Voltar ao catálogo</button>
+        {!error && loading && (
+          <div
+            className="gv-explore-loading"
+            role="status"
+          >
+            Carregando jogos da IGDB...
+          </div>
+        )}
 
-        </section>
+        {!error && !loading && (
+          visibleGames.length ? (
+            <>
+              <div className="gv-explore-grid">
+                {visibleGames.map((game) => (
+                  <button
+                    type="button"
+                    className="gv-explore-card"
+                    key={game.id}
+                    onClick={() => openDetails(game)}
+                    aria-label={`Ver detalhes de ${game.name}`}
+                  >
+                    <div className="gv-explore-cover">
+                      {game.imageUrl ? (
+                        <img
+                          src={game.imageUrl}
+                          alt=""
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="gv-explore-cover-fallback">
+                          <Gamepad2 size={28} />
+                          <span>SEM CAPA</span>
+                        </div>
+                      )}
 
-      </div>}
+                      <span className="gv-explore-card-action">
+                        Ver detalhes
+                        <ArrowRight size={15} />
+                      </span>
+                    </div>
 
+                    <div className="gv-explore-card-meta">
+                      <strong>{game.name}</strong>
+
+                      <span>
+                        {game.genres
+                          .slice(0, 2)
+                          .map((item) => item.name)
+                          .join(' · ') || 'Jogo'}
+
+                        {game.released
+                          ? ` · ${game.released.slice(0, 4)}`
+                          : ''}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {searching && (
+                <nav
+                  className="gv-explore-pagination"
+                  aria-label="Páginas da pesquisa"
+                >
+                  <button
+                    type="button"
+                    disabled={page === 1}
+                    onClick={() => {
+                      setPage((value) =>
+                        Math.max(1, value - 1)
+                      )
+                      goTo(featuredRef)
+                    }}
+                  >
+                    Anterior
+                  </button>
+
+                  <span>Página {page}</span>
+
+                  <button
+                    type="button"
+                    disabled={!hasNext}
+                    onClick={() => {
+                      setPage((value) => value + 1)
+                      goTo(featuredRef)
+                    }}
+                  >
+                    Próxima
+                    <ArrowRight size={15} />
+                  </button>
+                </nav>
+              )}
+            </>
+          ) : (
+            <div className="gv-explore-empty">
+              {games.length
+                ? 'Nenhum dos jogos carregados corresponde aos filtros.'
+                : 'Nenhum jogo encontrado.'}
+
+              <button
+                type="button"
+                onClick={() => {
+                  clearFilters()
+                  setQuery('')
+                  setPage(1)
+                }}
+              >
+                Limpar filtros
+              </button>
+            </div>
+          )
+        )}
+
+        {!loading && !error && (
+          <p className="gv-explore-demo-notice">
+            Gênero, plataforma, ano e ordenação
+            filtram apenas os jogos carregados
+            nesta seção ou página.
+          </p>
+        )}
+      </section>
+
+      {/* DESTAQUE EDITORIAL */}
+
+      <section
+        className="gv-explore-editorial"
+        aria-label="Destaque editorial"
+      >
+        <span className="gv-explore-eyebrow">
+          DESCUBRA MAIS
+        </span>
+
+        <h2>
+          Mais do que jogar.
+          <br />
+          Descobrir novas histórias.
+        </h2>
+
+        <p>
+          Explore títulos fora da sua coleção
+          e encontre sua próxima grande aventura.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => goTo(catalogRef)}
+        >
+          Conhecer o catálogo
+          <ArrowRight size={17} />
+        </button>
+      </section>
+
+      <p className="gv-explore-demo-notice">
+        Dados e imagens fornecidos por{' '}
+        <a
+          href="https://www.igdb.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          IGDB
+        </a>.
+      </p>
+
+      {/* DETALHES DO JOGO */}
+
+      {selected && (
+        <div
+          className="gv-explore-overlay"
+          onClick={closeDetails}
+        >
+          <section
+            className="gv-explore-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="gv-explore-dialog-title"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+          >
+            <button
+              type="button"
+              className="gv-explore-dialog-close"
+              onClick={closeDetails}
+              aria-label="Fechar detalhes"
+            >
+              <X size={21} />
+            </button>
+
+            {selected.imageUrl && (
+              <img
+                className="gv-explore-detail-art"
+                src={selected.imageUrl}
+                alt=""
+              />
+            )}
+
+            <span className="gv-explore-eyebrow">
+              SOBRE O JOGO
+            </span>
+
+            <h2 id="gv-explore-dialog-title">
+              {selected.name}
+            </h2>
+
+            {detailLoading && (
+              <p role="status">
+                Carregando detalhes...
+              </p>
+            )}
+
+            {detailError && (
+              <p role="alert">{detailError}</p>
+            )}
+
+            {(detail?.description ||
+              selected.description) && (
+              <p>
+                {detail?.description ||
+                  selected.description}
+              </p>
+            )}
+
+            <dl>
+              <div>
+                <dt>Gêneros</dt>
+                <dd>
+                  {selected.genres
+                    .map((item) => item.name)
+                    .join(', ') || 'Não informado'}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Plataformas</dt>
+                <dd>
+                  {selected.platforms
+                    .map((item) => item.name)
+                    .join(', ') || 'Não informado'}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Lançamento</dt>
+                <dd>
+                  {selected.released || 'Não informado'}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Avaliação IGDB</dt>
+                <dd>
+                  {selected.rating == null
+                    ? 'Não avaliado'
+                    : `${selected.rating.toFixed(0)}/100`}
+                </dd>
+              </div>
+            </dl>
+
+            <p className="gv-explore-dialog-note">
+              Ao adicionar, você poderá definir
+              plataforma, progresso, favoritos
+              e destaque no Início.
+            </p>
+
+            <button
+              type="button"
+              className="gv-explore-primary"
+              onClick={importGame}
+              disabled={authLoading}
+            >
+              {isAdmin
+                ? 'Adicionar à Biblioteca'
+                : 'Entrar para adicionar'}
+              <ArrowRight size={17} />
+            </button>
+
+            <button
+              type="button"
+              className="gv-explore-primary"
+              onClick={closeDetails}
+            >
+              Voltar ao catálogo
+            </button>
+          </section>
+        </div>
+      )}
     </main>
-
   )
-
 }
-
-
 
 export default Explore

@@ -16,11 +16,14 @@ export interface Game {
   status: GameStatus
   favorite: boolean
 
-  // Integração com a RAWG
+  // Identificadores dos catálogos
   rawgId?: number | null
+  igdbId?: number | null
+
+  // Imagem do jogo
   imageUrl?: string | null
 
-  // Personalização da página Início
+  // Personalização do Início
   showOnHome?: boolean
   isHero?: boolean
 }

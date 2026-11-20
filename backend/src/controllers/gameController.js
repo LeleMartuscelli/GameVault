@@ -9,6 +9,7 @@ const validStatuses = [
   'Abandonado'
 ]
 
+// Campos retornados pela API
 const gameFields = `
   id,
   title,
@@ -19,6 +20,7 @@ const gameFields = `
   status,
   favorite,
   rawg_id AS "rawgId",
+  igdb_id AS "igdbId",
   image_url AS "imageUrl",
   show_on_home AS "showOnHome",
   is_hero AS "isHero"
@@ -34,6 +36,7 @@ function validateGame(data, isUpdate = false) {
     status,
     favorite,
     rawgId,
+    igdbId,
     imageUrl,
     showOnHome,
     isHero
@@ -65,7 +68,10 @@ function validateGame(data, isUpdate = false) {
     return 'Plataforma inválida'
   }
 
-  if (status !== undefined && !validStatuses.includes(status)) {
+  if (
+    status !== undefined &&
+    !validStatuses.includes(status)
+  ) {
     return 'Status inválido'
   }
 
@@ -75,54 +81,57 @@ function validateGame(data, isUpdate = false) {
     achievements
   ]
 
-  if (numbers.some(
-    (value) =>
-      value !== undefined &&
-      (!Number.isSafeInteger(value) || value < 0)
-  )) {
+  if (
+    numbers.some(
+      value =>
+        value !== undefined &&
+        (!Number.isSafeInteger(value) || value < 0)
+    )
+  ) {
     return 'Os valores numéricos devem ser inteiros não negativos'
   }
 
-  if (
-    favorite !== undefined &&
-    typeof favorite !== 'boolean'
-  ) {
-    return 'Favorito deve ser verdadeiro ou falso'
+  for (const [name, value] of [
+    ['favorite', favorite],
+    ['showOnHome', showOnHome],
+    ['isHero', isHero]
+  ]) {
+    if (value !== undefined && typeof value !== 'boolean') {
+      return `${name} deve ser verdadeiro ou falso`
+    }
+  }
+
+  for (const [name, value] of [
+    ['rawgId', rawgId],
+    ['igdbId', igdbId]
+  ]) {
+    if (
+      value !== undefined &&
+      value !== null &&
+      (!Number.isSafeInteger(value) || value <= 0)
+    ) {
+      return `${name} inválido`
+    }
   }
 
   if (
-    showOnHome !== undefined &&
-    typeof showOnHome !== 'boolean'
+    rawgId != null &&
+    igdbId != null
   ) {
-    return 'showOnHome deve ser verdadeiro ou falso'
-  }
-
-  if (
-    isHero !== undefined &&
-    typeof isHero !== 'boolean'
-  ) {
-    return 'isHero deve ser verdadeiro ou falso'
-  }
-
-  if (
-    rawgId !== undefined &&
-    rawgId !== null &&
-    (!Number.isSafeInteger(rawgId) || rawgId <= 0)
-  ) {
-    return 'ID da RAWG inválido'
+    return 'Informe apenas um identificador de catálogo'
   }
 
   if (imageUrl !== undefined && imageUrl !== null) {
-    if (typeof imageUrl !== 'string') {
+    if (
+      typeof imageUrl !== 'string' ||
+      imageUrl.length > 2048
+    ) {
       return 'URL da imagem inválida'
-    }
-
-    if (imageUrl.length > 2048) {
-      return 'URL da imagem muito longa'
     }
 
     try {
       const parsed = new URL(imageUrl)
+
       if (parsed.protocol !== 'https:') {
         return 'A imagem deve utilizar HTTPS'
       }
@@ -138,7 +147,21 @@ function validateGame(data, isUpdate = false) {
   return null
 }
 
-// GET - Listar todos os jogos
+function handleDatabaseError(res, error, action) {
+  console.error(`Erro ao ${action} jogo:`, error.message)
+
+  if (error.code === '23505') {
+    return res.status(409).json({
+      message: 'Este jogo já está cadastrado nessa plataforma ou o destaque principal está em conflito.'
+    })
+  }
+
+  return res.status(500).json({
+    message: `Erro interno ao ${action} jogo`
+  })
+}
+
+// GET - Listar todos
 const getGames = async (req, res) => {
   try {
     const result = await pool.query(`
@@ -149,11 +172,7 @@ const getGames = async (req, res) => {
 
     res.json(result.rows)
   } catch (error) {
-    console.error('Erro ao listar jogos:', error.message)
-
-    res.status(500).json({
-      message: 'Erro interno ao buscar jogos'
-    })
+    handleDatabaseError(res, error, 'listar')
   }
 }
 
@@ -174,7 +193,7 @@ const getGameById = async (req, res) => {
       WHERE id = $1
     `, [id])
 
-    if (result.rows.length === 0) {
+    if (!result.rows.length) {
       return res.status(404).json({
         message: 'Jogo não encontrado'
       })
@@ -182,24 +201,17 @@ const getGameById = async (req, res) => {
 
     res.json(result.rows[0])
   } catch (error) {
-    console.error('Erro ao buscar jogo:', error.message)
-
-    res.status(500).json({
-      message: 'Erro interno ao buscar jogo'
-    })
+    handleDatabaseError(res, error, 'buscar')
   }
 }
 
 // POST - Cadastrar novo jogo
 const createGame = async (req, res) => {
-  const data = req.body
+  const data = req.body || {}
+  const error = validateGame(data)
 
-  const validationError = validateGame(data)
-
-  if (validationError) {
-    return res.status(400).json({
-      message: validationError
-    })
+  if (error) {
+    return res.status(400).json({ message: error })
   }
 
   const {
@@ -211,46 +223,57 @@ const createGame = async (req, res) => {
     status,
     favorite = false,
     rawgId = null,
+    igdbId = null,
     imageUrl = null,
     showOnHome = true,
     isHero = false
   } = data
 
-  const client = await pool.connect().catch((error) => {
-    console.error('Erro de conexão:', error.message)
-    return null
-  })
-
-  if (!client) {
-    return res.status(500).json({
-      message: 'Erro ao conectar ao banco de dados'
-    })
-  }
+  let client
+  let transactionStarted = false
 
   try {
+    client = await pool.connect()
+
     await client.query('BEGIN')
+    transactionStarted = true
 
-    // Evita importar o mesmo jogo da RAWG
-    // duas vezes para a mesma plataforma.
-    if (rawgId !== null) {
-      const existing = await client.query(`
-        SELECT id
-        FROM games
-        WHERE rawg_id = $1
-          AND LOWER(platform) = LOWER($2)
-        LIMIT 1
-      `, [rawgId, platform.trim()])
+    // Evita operações simultâneas conflitantes
+    // ao cadastrar jogos ou alterar o banner.
+    await client.query(
+      'SELECT pg_advisory_xact_lock(624810)'
+    )
 
-      if (existing.rows.length > 0) {
-        await client.query('ROLLBACK')
+    const duplicate = await client.query(`
+      SELECT id
+      FROM games
+      WHERE LOWER(title) = LOWER($1)
+        AND LOWER(platform) = LOWER($2)
+         OR (
+          LOWER(platform) = LOWER($2)
+          AND (
+            ($3::integer IS NOT NULL AND rawg_id = $3)
+            OR
+            ($4::integer IS NOT NULL AND igdb_id = $4)
+          )
+        )
+      LIMIT 1
+    `, [
+      title.trim(),
+      platform.trim(),
+      rawgId,
+      igdbId
+    ])
 
-        return res.status(409).json({
-          message: 'Este jogo já está cadastrado nessa plataforma'
-        })
-      }
+    if (duplicate.rows.length) {
+      await client.query('ROLLBACK')
+      transactionStarted = false
+
+      return res.status(409).json({
+        message: 'Este jogo já está cadastrado nessa plataforma'
+      })
     }
 
-    // Se escolhido como banner, desmarca o anterior.
     if (isHero) {
       await client.query(`
         UPDATE games
@@ -269,13 +292,14 @@ const createGame = async (req, res) => {
         status,
         favorite,
         rawg_id,
+        igdb_id,
         image_url,
         show_on_home,
         is_hero
       )
       VALUES (
         $1, $2, $3, $4, $5, $6,
-        $7, $8, $9, $10, $11
+        $7, $8, $9, $10, $11, $12
       )
       RETURNING ${gameFields}
     `, [
@@ -287,28 +311,28 @@ const createGame = async (req, res) => {
       status,
       favorite,
       rawgId,
+      igdbId,
       imageUrl,
       isHero ? true : showOnHome,
       isHero
     ])
 
     await client.query('COMMIT')
+    transactionStarted = false
 
     res.status(201).json(result.rows[0])
   } catch (error) {
-    await client.query('ROLLBACK')
+    if (client && transactionStarted) {
+      await client.query('ROLLBACK').catch(() => {})
+    }
 
-    console.error('Erro ao cadastrar jogo:', error.message)
-
-    res.status(500).json({
-      message: 'Erro interno ao cadastrar jogo'
-    })
+    handleDatabaseError(res, error, 'cadastrar')
   } finally {
-    client.release()
+    if (client) client.release()
   }
 }
 
-// PUT - Atualizar jogo existente
+// PUT - Atualizar jogo
 const updateGame = async (req, res) => {
   const id = Number(req.params.id)
 
@@ -318,7 +342,8 @@ const updateGame = async (req, res) => {
     })
   }
 
-  const validationError = validateGame(req.body, true)
+  const data = req.body || {}
+  const validationError = validateGame(data, true)
 
   if (validationError) {
     return res.status(400).json({
@@ -335,26 +360,35 @@ const updateGame = async (req, res) => {
     status,
     favorite,
     rawgId,
+    igdbId,
     imageUrl,
     showOnHome,
     isHero
-  } = req.body
+  } = data
 
   let client
+  let transactionStarted = false
 
   try {
     client = await pool.connect()
+
     await client.query('BEGIN')
+    transactionStarted = true
+
+    await client.query(
+      'SELECT pg_advisory_xact_lock(624810)'
+    )
 
     const currentResult = await client.query(`
-      SELECT id, show_on_home, is_hero
+      SELECT *
       FROM games
       WHERE id = $1
       FOR UPDATE
     `, [id])
 
-    if (currentResult.rows.length === 0) {
+    if (!currentResult.rows.length) {
       await client.query('ROLLBACK')
+      transactionStarted = false
 
       return res.status(404).json({
         message: 'Jogo não encontrado'
@@ -364,13 +398,27 @@ const updateGame = async (req, res) => {
     const current = currentResult.rows[0]
 
     const nextIsHero = isHero ?? current.is_hero
-    const nextShowOnHome = showOnHome ?? current.show_on_home
+    const nextShowOnHome =
+      showOnHome ?? current.show_on_home
 
     if (nextIsHero && !nextShowOnHome) {
       await client.query('ROLLBACK')
+      transactionStarted = false
 
       return res.status(400).json({
         message: 'O jogo do banner precisa aparecer no Início'
+      })
+    }
+
+    const nextRawgId = rawgId ?? current.rawg_id
+    const nextIgdbId = igdbId ?? current.igdb_id
+
+    if (nextRawgId != null && nextIgdbId != null) {
+      await client.query('ROLLBACK')
+      transactionStarted = false
+
+      return res.status(400).json({
+        message: 'O jogo não pode ter dois identificadores de catálogo'
       })
     }
 
@@ -394,10 +442,11 @@ const updateGame = async (req, res) => {
         status = COALESCE($6, status),
         favorite = COALESCE($7, favorite),
         rawg_id = COALESCE($8, rawg_id),
-        image_url = COALESCE($9, image_url),
-        show_on_home = COALESCE($10, show_on_home),
-        is_hero = COALESCE($11, is_hero)
-      WHERE id = $12
+        igdb_id = COALESCE($9, igdb_id),
+        image_url = COALESCE($10, image_url),
+        show_on_home = COALESCE($11, show_on_home),
+        is_hero = COALESCE($12, is_hero)
+      WHERE id = $13
       RETURNING ${gameFields}
     `, [
       title?.trim() ?? null,
@@ -408,6 +457,7 @@ const updateGame = async (req, res) => {
       status ?? null,
       favorite ?? null,
       rawgId ?? null,
+      igdbId ?? null,
       imageUrl ?? null,
       showOnHome ?? null,
       isHero ?? null,
@@ -415,18 +465,15 @@ const updateGame = async (req, res) => {
     ])
 
     await client.query('COMMIT')
+    transactionStarted = false
 
     res.json(result.rows[0])
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK')
+    if (client && transactionStarted) {
+      await client.query('ROLLBACK').catch(() => {})
     }
 
-    console.error('Erro ao atualizar jogo:', error.message)
-
-    res.status(500).json({
-      message: 'Erro interno ao atualizar jogo'
-    })
+    handleDatabaseError(res, error, 'atualizar')
   } finally {
     if (client) client.release()
   }
@@ -449,7 +496,7 @@ const deleteGame = async (req, res) => {
       RETURNING ${gameFields}
     `, [id])
 
-    if (result.rows.length === 0) {
+    if (!result.rows.length) {
       return res.status(404).json({
         message: 'Jogo não encontrado'
       })
@@ -460,11 +507,7 @@ const deleteGame = async (req, res) => {
       game: result.rows[0]
     })
   } catch (error) {
-    console.error('Erro ao excluir jogo:', error.message)
-
-    res.status(500).json({
-      message: 'Erro interno ao excluir jogo'
-    })
+    handleDatabaseError(res, error, 'excluir')
   }
 }
 

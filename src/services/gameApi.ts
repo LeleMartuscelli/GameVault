@@ -15,8 +15,11 @@ export interface CreateGameData {
   status: GameStatus
   favorite: boolean
 
-  // Integração RAWG
+  // Identificadores dos catálogos
   rawgId?: number | null
+  igdbId?: number | null
+
+  // Imagem do jogo
   imageUrl?: string | null
 
   // Personalização do Início

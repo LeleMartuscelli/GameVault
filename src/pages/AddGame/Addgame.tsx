@@ -37,6 +37,7 @@ const statuses: GameStatus[] = [
 ]
 
 type ImportedGame = {
+  source?: 'rawg' | 'igdb'
   id: number
   title: string
   platforms: string[]
@@ -45,14 +46,22 @@ type ImportedGame = {
 }
 
 function getSuggestedPlatform(names: string[]): string {
-  if (names.some((name) => /\bPC\b/i.test(name))) return 'PC'
+  if (names.some((name) => /\bPC\b|Windows/i.test(name))) {
+    return 'PC'
+  }
+
   if (names.some((name) => /PlayStation/i.test(name))) {
     return 'PlayStation'
   }
-  if (names.some((name) => /Xbox/i.test(name))) return 'Xbox'
+
+  if (names.some((name) => /Xbox/i.test(name))) {
+    return 'Xbox'
+  }
+
   if (names.some((name) => /Nintendo|Switch/i.test(name))) {
     return 'Nintendo'
   }
+
   return 'Outra'
 }
 
@@ -85,20 +94,21 @@ function AddGame() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const rawImport = (
+  // Compatível com a navegação existente do Explore.
+  const importedGame = (
     location.state as { rawgImport?: ImportedGame } | null
   )?.rawgImport
 
   const importedTitle =
-    typeof rawImport?.title === 'string'
-      ? rawImport.title
+    typeof importedGame?.title === 'string'
+      ? importedGame.title
       : ''
 
   const [title, setTitle] = useState(importedTitle)
 
   const [platform, setPlatform] = useState(
-    rawImport
-      ? getSuggestedPlatform(rawImport.platforms ?? [])
+    importedGame
+      ? getSuggestedPlatform(importedGame.platforms ?? [])
       : 'PC'
   )
 
@@ -118,7 +128,9 @@ function AddGame() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  const backPath = rawImport ? '/explorar' : '/biblioteca'
+  const backPath = importedGame
+    ? '/explorar'
+    : '/biblioteca'
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -170,6 +182,8 @@ function AddGame() {
     try {
       const existingGames = await getGames()
 
+      // Impede duplicatas por título ou ID de catálogo
+      // considerando a mesma plataforma.
       const alreadyExists = existingGames.some((game) => {
         const samePlatform =
           normalizeText(game.platform) ===
@@ -180,12 +194,23 @@ function AddGame() {
           normalizeText(normalizedTitle)
 
         const sameRawgId =
-          rawImport &&
-          Number.isSafeInteger(rawImport.id) &&
-          rawImport.id > 0 &&
-          game.rawgId === rawImport.id
+          !!importedGame &&
+          importedGame.source !== 'igdb' &&
+          Number.isSafeInteger(importedGame.id) &&
+          importedGame.id > 0 &&
+          game.rawgId === importedGame.id
 
-        return samePlatform && (sameTitle || sameRawgId)
+        const sameIgdbId =
+          importedGame?.source === 'igdb' &&
+          Number.isSafeInteger(importedGame.id) &&
+          importedGame.id > 0 &&
+          game.igdbId === importedGame.id
+
+        return samePlatform && (
+          sameTitle ||
+          sameRawgId ||
+          sameIgdbId
+        )
       })
 
       if (alreadyExists) {
@@ -195,16 +220,26 @@ function AddGame() {
         return
       }
 
+      // Cada API utiliza seu próprio identificador.
       const validRawgId =
-        rawImport &&
-        Number.isSafeInteger(rawImport.id) &&
-        rawImport.id > 0
-          ? rawImport.id
+        importedGame?.source !== 'igdb' &&
+        importedGame &&
+        Number.isSafeInteger(importedGame.id) &&
+        importedGame.id > 0
+          ? importedGame.id
           : null
 
+      const validIgdbId =
+        importedGame?.source === 'igdb' &&
+        Number.isSafeInteger(importedGame.id) &&
+        importedGame.id > 0
+          ? importedGame.id
+          : null
+
+      // Preserva a capa recebida do catálogo.
       const importedImage =
-        rawImport?.imageUrl ??
-        rawImport?.backgroundImage ??
+        importedGame?.imageUrl ??
+        importedGame?.backgroundImage ??
         null
 
       await createGame({
@@ -216,6 +251,7 @@ function AddGame() {
         status,
         favorite,
         rawgId: validRawgId,
+        igdbId: validIgdbId,
         imageUrl: importedImage,
         showOnHome,
         isHero,
@@ -240,18 +276,21 @@ function AddGame() {
       <div className="gv-add-shell">
 
         {/* NAVEGAÇÃO */}
+
         <button
           type="button"
           className="gv-add-back"
           onClick={() => navigate(backPath)}
         >
           <ArrowLeft size={16} aria-hidden="true" />
-          {rawImport
+
+          {importedGame
             ? 'Voltar ao Explorar'
             : 'Voltar à biblioteca'}
         </button>
 
         {/* CABEÇALHO */}
+
         <header className="gv-add-heading">
           <span className="gv-add-eyebrow">
             <Sparkles size={14} aria-hidden="true" />
@@ -271,8 +310,8 @@ function AddGame() {
         </header>
 
         {/* CONTEÚDO PRINCIPAL */}
-        <div className="gv-add-layout">
 
+        <div className="gv-add-layout">
           <section
             className="gv-add-panel"
             aria-labelledby="gv-add-form-title"
@@ -286,6 +325,7 @@ function AddGame() {
                 <h2 id="gv-add-form-title">
                   Informações do jogo
                 </h2>
+
                 <p>
                   Comece pelo essencial. Você poderá
                   editar os dados depois.
@@ -299,7 +339,8 @@ function AddGame() {
               aria-busy={isSubmitting}
             >
 
-              {/* NOME DO JOGO */}
+              {/* NOME */}
+
               <div className="gv-add-field">
                 <label htmlFor="gv-add-title">
                   Nome do jogo
@@ -323,8 +364,8 @@ function AddGame() {
               </div>
 
               {/* PLATAFORMA E STATUS */}
-              <div className="gv-add-fields-two">
 
+              <div className="gv-add-fields-two">
                 <div className="gv-add-field">
                   <label htmlFor="gv-add-platform">
                     Plataforma
@@ -373,12 +414,12 @@ function AddGame() {
               </div>
 
               {/* PROGRESSO */}
+
               <div className="gv-add-divider">
                 <span>SEU PROGRESSO</span>
               </div>
 
               <div className="gv-add-fields-three">
-
                 <div className="gv-add-field">
                   <label htmlFor="gv-add-hours">
                     <Clock3 size={15} aria-hidden="true" />
@@ -444,6 +485,7 @@ function AddGame() {
               </div>
 
               {/* PERSONALIZAÇÃO */}
+
               <div className="gv-add-divider">
                 <span>PERSONALIZAÇÃO</span>
               </div>
@@ -462,15 +504,16 @@ function AddGame() {
                     id="gv-add-favorite"
                     type="checkbox"
                     checked={favorite}
-                    onChange={(event) =>
+                    onChange={(event) => {
                       setFavorite(event.target.checked)
-                    }
+                    }}
                     disabled={isSubmitting}
                     style={{
                       width: 18,
                       height: 18,
                     }}
                   />
+
                   Adicionar aos meus favoritos
                 </label>
               </div>
@@ -503,6 +546,7 @@ function AddGame() {
                       height: 18,
                     }}
                   />
+
                   Mostrar no carrossel do Início
                 </label>
               </div>
@@ -535,6 +579,7 @@ function AddGame() {
                       height: 18,
                     }}
                   />
+
                   Definir como banner principal
                 </label>
               </div>
@@ -553,6 +598,7 @@ function AddGame() {
               )}
 
               {/* ERROS */}
+
               {errorMessage && (
                 <p className="gv-add-error" role="alert">
                   {errorMessage}
@@ -560,6 +606,7 @@ function AddGame() {
               )}
 
               {/* BOTÕES */}
+
               <div className="gv-add-actions">
                 <button
                   type="button"
@@ -587,11 +634,11 @@ function AddGame() {
                   )}
                 </button>
               </div>
-
             </form>
           </section>
 
           {/* PAINEL LATERAL */}
+
           <aside
             className="gv-add-aside"
             aria-label="Sobre sua coleção"
