@@ -593,3 +593,13 @@
   }
 }
 
+/* Perfil — layout mais limpo */
+
+.gv-profile > .gv-profile-cover {
+  margin-top: 24px;
+}
+
+.gv-profile-identity + .gv-profile-section,
+.gv-profile-success + .gv-profile-section {
+  margin-top: 48px;
+}

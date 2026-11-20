@@ -13,9 +13,9 @@ import {
 
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
-import { createGame } from '../../services/gameApi'
+import { createGame, getGames } from '../../services/gameApi'
 import type { GameStatus } from '../../types/games'
 
 import './AddGame.css'
@@ -36,41 +36,89 @@ const statuses: GameStatus[] = [
   'Abandonado',
 ]
 
+type ImportedGame = {
+  id: number
+  title: string
+  platforms: string[]
+  imageUrl?: string | null
+  backgroundImage?: string | null
+}
+
+function getSuggestedPlatform(names: string[]): string {
+  if (names.some((name) => /\bPC\b/i.test(name))) return 'PC'
+  if (names.some((name) => /PlayStation/i.test(name))) {
+    return 'PlayStation'
+  }
+  if (names.some((name) => /Xbox/i.test(name))) return 'Xbox'
+  if (names.some((name) => /Nintendo|Switch/i.test(name))) {
+    return 'Nintendo'
+  }
+  return 'Outra'
+}
+
+function normalizeText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLocaleLowerCase('pt-BR')
+}
+
+function parseNonNegativeInteger(
+  value: string,
+  fieldName: string
+): number {
+  if (value.trim() === '') return 0
+
+  const number = Number(value)
+
+  if (!Number.isSafeInteger(number) || number < 0) {
+    throw new Error(
+      `${fieldName} deve ser um número inteiro maior ou igual a zero.`
+    )
+  }
+
+  return number
+}
+
 function AddGame() {
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const [title, setTitle] = useState('')
-  const [platform, setPlatform] = useState('PC')
-  const [status, setStatus] = useState<GameStatus>('Quero jogar')
+  const rawImport = (
+    location.state as { rawgImport?: ImportedGame } | null
+  )?.rawgImport
+
+  const importedTitle =
+    typeof rawImport?.title === 'string'
+      ? rawImport.title
+      : ''
+
+  const [title, setTitle] = useState(importedTitle)
+
+  const [platform, setPlatform] = useState(
+    rawImport
+      ? getSuggestedPlatform(rawImport.platforms ?? [])
+      : 'PC'
+  )
+
+  const [status, setStatus] = useState<GameStatus>(
+    'Quero jogar'
+  )
 
   const [hoursPlayed, setHoursPlayed] = useState('')
   const [timesCompleted, setTimesCompleted] = useState('')
   const [achievements, setAchievements] = useState('')
 
+  // Personalização
+  const [favorite, setFavorite] = useState(false)
+  const [showOnHome, setShowOnHome] = useState(true)
+  const [isHero, setIsHero] = useState(false)
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  function parseNonNegativeInteger(
-    value: string,
-    fieldName: string
-  ): number {
-    if (value.trim() === '') {
-      return 0
-    }
-
-    const number = Number(value)
-
-    if (
-      !Number.isSafeInteger(number) ||
-      number < 0
-    ) {
-      throw new Error(
-        `${fieldName} deve ser um número inteiro maior ou igual a zero.`
-      )
-    }
-
-    return number
-  }
+  const backPath = rawImport ? '/explorar' : '/biblioteca'
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -120,6 +168,45 @@ function AddGame() {
     setIsSubmitting(true)
 
     try {
+      const existingGames = await getGames()
+
+      const alreadyExists = existingGames.some((game) => {
+        const samePlatform =
+          normalizeText(game.platform) ===
+          normalizeText(platform)
+
+        const sameTitle =
+          normalizeText(game.title) ===
+          normalizeText(normalizedTitle)
+
+        const sameRawgId =
+          rawImport &&
+          Number.isSafeInteger(rawImport.id) &&
+          rawImport.id > 0 &&
+          game.rawgId === rawImport.id
+
+        return samePlatform && (sameTitle || sameRawgId)
+      })
+
+      if (alreadyExists) {
+        setErrorMessage(
+          'Esse jogo já está cadastrado nessa plataforma. Abra a Biblioteca para editá-lo.'
+        )
+        return
+      }
+
+      const validRawgId =
+        rawImport &&
+        Number.isSafeInteger(rawImport.id) &&
+        rawImport.id > 0
+          ? rawImport.id
+          : null
+
+      const importedImage =
+        rawImport?.imageUrl ??
+        rawImport?.backgroundImage ??
+        null
+
       await createGame({
         title: normalizedTitle,
         platform,
@@ -127,18 +214,21 @@ function AddGame() {
         timesCompleted: parsedCompleted,
         achievements: parsedAchievements,
         status,
-        favorite: false,
+        favorite,
+        rawgId: validRawgId,
+        imageUrl: importedImage,
+        showOnHome,
+        isHero,
       })
 
       navigate('/biblioteca')
     } catch (error) {
-      console.error(
-        'Erro ao cadastrar jogo:',
-        error
-      )
+      console.error('Erro ao cadastrar jogo:', error)
 
       setErrorMessage(
-        'Não foi possível cadastrar o jogo. Verifique sua conexão e tente novamente.'
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível cadastrar o jogo. Tente novamente.'
       )
     } finally {
       setIsSubmitting(false)
@@ -150,29 +240,21 @@ function AddGame() {
       <div className="gv-add-shell">
 
         {/* NAVEGAÇÃO */}
-
         <button
           type="button"
           className="gv-add-back"
-          onClick={() => navigate('/biblioteca')}
+          onClick={() => navigate(backPath)}
         >
-          <ArrowLeft
-            size={16}
-            aria-hidden="true"
-          />
-
-          Voltar à biblioteca
+          <ArrowLeft size={16} aria-hidden="true" />
+          {rawImport
+            ? 'Voltar ao Explorar'
+            : 'Voltar à biblioteca'}
         </button>
 
         {/* CABEÇALHO */}
-
         <header className="gv-add-heading">
           <span className="gv-add-eyebrow">
-            <Sparkles
-              size={14}
-              aria-hidden="true"
-            />
-
+            <Sparkles size={14} aria-hidden="true" />
             SUA COLEÇÃO, SUA HISTÓRIA
           </span>
 
@@ -189,29 +271,21 @@ function AddGame() {
         </header>
 
         {/* CONTEÚDO PRINCIPAL */}
-
         <div className="gv-add-layout">
-
-          {/* FORMULÁRIO */}
 
           <section
             className="gv-add-panel"
             aria-labelledby="gv-add-form-title"
           >
             <div className="gv-add-panel-heading">
-
               <span className="gv-add-icon-box">
-                <Gamepad2
-                  size={21}
-                  aria-hidden="true"
-                />
+                <Gamepad2 size={21} aria-hidden="true" />
               </span>
 
               <div>
                 <h2 id="gv-add-form-title">
                   Informações do jogo
                 </h2>
-
                 <p>
                   Comece pelo essencial. Você poderá
                   editar os dados depois.
@@ -225,8 +299,7 @@ function AddGame() {
               aria-busy={isSubmitting}
             >
 
-              {/* NOME */}
-
+              {/* NOME DO JOGO */}
               <div className="gv-add-field">
                 <label htmlFor="gv-add-title">
                   Nome do jogo
@@ -250,7 +323,6 @@ function AddGame() {
               </div>
 
               {/* PLATAFORMA E STATUS */}
-
               <div className="gv-add-fields-two">
 
                 <div className="gv-add-field">
@@ -268,10 +340,7 @@ function AddGame() {
                     disabled={isSubmitting}
                   >
                     {platforms.map((item) => (
-                      <option
-                        key={item}
-                        value={item}
-                      >
+                      <option key={item} value={item}>
                         {item}
                       </option>
                     ))}
@@ -295,34 +364,24 @@ function AddGame() {
                     disabled={isSubmitting}
                   >
                     {statuses.map((item) => (
-                      <option
-                        key={item}
-                        value={item}
-                      >
+                      <option key={item} value={item}>
                         {item}
                       </option>
                     ))}
                   </select>
                 </div>
-
-              </div>
-
-              {/* DIVISOR */}
-
-              <div className="gv-add-divider">
-                <span>SEU PROGRESSO</span>
               </div>
 
               {/* PROGRESSO */}
+              <div className="gv-add-divider">
+                <span>SEU PROGRESSO</span>
+              </div>
 
               <div className="gv-add-fields-three">
 
                 <div className="gv-add-field">
                   <label htmlFor="gv-add-hours">
-                    <Clock3
-                      size={15}
-                      aria-hidden="true"
-                    />
+                    <Clock3 size={15} aria-hidden="true" />
                     Horas jogadas
                   </label>
 
@@ -343,10 +402,7 @@ function AddGame() {
 
                 <div className="gv-add-field">
                   <label htmlFor="gv-add-completed">
-                    <Check
-                      size={15}
-                      aria-hidden="true"
-                    />
+                    <Check size={15} aria-hidden="true" />
                     Vezes zerado
                   </label>
 
@@ -367,10 +423,7 @@ function AddGame() {
 
                 <div className="gv-add-field">
                   <label htmlFor="gv-add-achievements">
-                    <Trophy
-                      size={15}
-                      aria-hidden="true"
-                    />
+                    <Trophy size={15} aria-hidden="true" />
                     Conquistas
                   </label>
 
@@ -388,28 +441,130 @@ function AddGame() {
                     disabled={isSubmitting}
                   />
                 </div>
-
               </div>
 
-              {/* ERROS */}
+              {/* PERSONALIZAÇÃO */}
+              <div className="gv-add-divider">
+                <span>PERSONALIZAÇÃO</span>
+              </div>
 
-              {errorMessage && (
-                <p
-                  className="gv-add-error"
-                  role="alert"
+              <div className="gv-add-field">
+                <label
+                  htmlFor="gv-add-favorite"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    cursor: 'pointer',
+                  }}
                 >
+                  <input
+                    id="gv-add-favorite"
+                    type="checkbox"
+                    checked={favorite}
+                    onChange={(event) =>
+                      setFavorite(event.target.checked)
+                    }
+                    disabled={isSubmitting}
+                    style={{
+                      width: 18,
+                      height: 18,
+                    }}
+                  />
+                  Adicionar aos meus favoritos
+                </label>
+              </div>
+
+              <div className="gv-add-field">
+                <label
+                  htmlFor="gv-add-home"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <input
+                    id="gv-add-home"
+                    type="checkbox"
+                    checked={showOnHome}
+                    onChange={(event) => {
+                      const checked = event.target.checked
+                      setShowOnHome(checked)
+
+                      if (!checked) {
+                        setIsHero(false)
+                      }
+                    }}
+                    disabled={isSubmitting}
+                    style={{
+                      width: 18,
+                      height: 18,
+                    }}
+                  />
+                  Mostrar no carrossel do Início
+                </label>
+              </div>
+
+              <div className="gv-add-field">
+                <label
+                  htmlFor="gv-add-hero"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <input
+                    id="gv-add-hero"
+                    type="checkbox"
+                    checked={isHero}
+                    onChange={(event) => {
+                      const checked = event.target.checked
+                      setIsHero(checked)
+
+                      if (checked) {
+                        setShowOnHome(true)
+                      }
+                    }}
+                    disabled={isSubmitting}
+                    style={{
+                      width: 18,
+                      height: 18,
+                    }}
+                  />
+                  Definir como banner principal
+                </label>
+              </div>
+
+              {isHero && (
+                <p
+                  style={{
+                    fontSize: '13px',
+                    opacity: 0.7,
+                    marginTop: '4px',
+                  }}
+                >
+                  Este jogo substituirá o destaque
+                  principal configurado anteriormente.
+                </p>
+              )}
+
+              {/* ERROS */}
+              {errorMessage && (
+                <p className="gv-add-error" role="alert">
                   {errorMessage}
                 </p>
               )}
 
               {/* BOTÕES */}
-
               <div className="gv-add-actions">
-
                 <button
                   type="button"
                   className="gv-add-cancel"
-                  onClick={() => navigate('/biblioteca')}
+                  onClick={() => navigate(backPath)}
                   disabled={isSubmitting}
                 >
                   Cancelar
@@ -431,19 +586,16 @@ function AddGame() {
                     />
                   )}
                 </button>
-
               </div>
 
             </form>
           </section>
 
           {/* PAINEL LATERAL */}
-
           <aside
             className="gv-add-aside"
             aria-label="Sobre sua coleção"
           >
-
             <div className="gv-add-aside-art">
               <Layers3
                 size={38}
@@ -475,9 +627,7 @@ function AddGame() {
               Seus jogos. Suas histórias.
               Sua trajetória.
             </div>
-
           </aside>
-
         </div>
       </div>
     </main>

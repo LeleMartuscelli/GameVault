@@ -7,7 +7,16 @@ import gtaVImage from '../assets/games/grand-theft-auto-v.jpg'
 import mw4Image from '../assets/games/Modern-Warfare-4.jpg'
 import plagueTaleImage from '../assets/games/A-Plague-Tale-Innocence.png'
 
-export function getGameImage(title: string): string | null {
+export function getGameImage(
+  title: string,
+  imageUrl?: string | null
+): string | null {
+  // Prioriza a imagem importada da RAWG.
+  if (imageUrl && /^https:\/\//i.test(imageUrl)) {
+    return imageUrl
+  }
+
+  // Mantém o suporte às imagens locais já cadastradas.
   const normalizedTitle = title
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -15,21 +24,15 @@ export function getGameImage(title: string): string | null {
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
 
-  if (
-    normalizedTitle.includes('modern warfare 4')
-  ) {
+  if (normalizedTitle.includes('modern warfare 4')) {
     return mw4Image
   }
 
-  if (
-    normalizedTitle.includes('warzone')
-  ) {
+  if (normalizedTitle.includes('warzone')) {
     return warzoneImage
   }
 
-  if (
-    normalizedTitle.includes('counter strike 2')
-  ) {
+  if (normalizedTitle.includes('counter strike 2')) {
     return cs2Image
   }
 
@@ -40,9 +43,7 @@ export function getGameImage(title: string): string | null {
     return tlouImage
   }
 
-  if (
-    normalizedTitle.includes('arc raiders')
-  ) {
+  if (normalizedTitle.includes('arc raiders')) {
     return arcRaidersImage
   }
 
@@ -53,9 +54,10 @@ export function getGameImage(title: string): string | null {
   ) {
     return gtaVImage
   }
-  
+
   if (normalizedTitle.includes('a plague tale innocence')) {
-  return plagueTaleImage
-}
+    return plagueTaleImage
+  }
+
   return null
 }

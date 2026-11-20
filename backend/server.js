@@ -1,4 +1,3 @@
-
 require('dotenv').config()
 
 const express = require('express')
@@ -12,6 +11,7 @@ const gameRoutes = require('./src/routes/gameRoutes')
 const authRoutes = require('./src/routes/authRoutes')
 const galleryRoutes = require('./src/routes/galleryRoutes')
 const profileRoutes = require('./src/routes/profileRoutes')
+const exploreRoutes = require('./src/routes/exploreRoutes')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -65,9 +65,7 @@ app.use(session({
 }))
 
 app.get('/', (req, res) => {
-  res.json({
-    message: 'API do GameVault funcionando!'
-  })
+  res.json({ message: 'API do GameVault funcionando!' })
 })
 
 // Jogos
@@ -75,11 +73,15 @@ app.use('/api/games', gameRoutes)
 
 // Autenticação
 app.use('/api/auth', authRoutes)
+
 // Perfil administrativo
 app.use('/api/profile', profileRoutes)
 
 // Galeria
 app.use('/api/gallery', galleryRoutes)
+
+// Catálogo externo RAWG (consulta pública; chave apenas no backend)
+app.use('/api/explore', exploreRoutes)
 
 app.listen(PORT, () => {
   console.log(`Servidor GameVault rodando na porta ${PORT}`)

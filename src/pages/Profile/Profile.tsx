@@ -312,10 +312,6 @@ function Profile() {
 
   return (
     <main className="gv-library gv-profile">
-      <span className="gv-profile-eyebrow">
-        SEU ESPAÇO NO GAMEVAULT
-      </span>
-
       <section className="gv-profile-cover" aria-label="Banner do perfil">
         {bannerSrc ? (
           <img className="gv-profile-cover-image" src={bannerSrc} alt="Banner personalizado" />
@@ -375,13 +371,6 @@ function Profile() {
       )}
 
       <section className="gv-profile-section">
-        <div className="gv-profile-heading">
-          <div>
-            <span className="gv-library-eyebrow">SOBRE MIM</span>
-            <h2>Minha identidade gamer.</h2>
-          </div>
-        </div>
-
         <div className="gv-profile-preferences">
           <div className="gv-profile-preference">
             <Heart size={21} />
@@ -395,9 +384,7 @@ function Profile() {
             <Monitor size={21} />
             <div>
               <span>Plataforma principal</span>
-              <strong>
-                {profile.favoritePlatform || 'A definir'}
-              </strong>
+              <strong>{profile.favoritePlatform || 'A definir'}</strong>
             </div>
           </div>
 

@@ -1,3 +1,4 @@
+
 export type GameStatus =
   | 'Jogando'
   | 'Zerado'
@@ -14,4 +15,12 @@ export interface Game {
   achievements: number
   status: GameStatus
   favorite: boolean
+
+  // Integração com a RAWG
+  rawgId?: number | null
+  imageUrl?: string | null
+
+  // Personalização da página Início
+  showOnHome?: boolean
+  isHero?: boolean
 }

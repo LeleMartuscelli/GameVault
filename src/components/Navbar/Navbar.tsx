@@ -231,11 +231,12 @@ function handleProfileClick() {
           </NavLink>
 
           <NavLink
-            to="/favoritos"
+            to="/explorar"
             onClick={closeMenus}
           >
-            Favoritos
+            Explorar
           </NavLink>
+
         </nav>
 
         {/* AÇÕES */}

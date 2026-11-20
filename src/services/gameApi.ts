@@ -14,6 +14,14 @@ export interface CreateGameData {
   achievements: number
   status: GameStatus
   favorite: boolean
+
+  // Integração RAWG
+  rawgId?: number | null
+  imageUrl?: string | null
+
+  // Personalização do Início
+  showOnHome?: boolean
+  isHero?: boolean
 }
 
 async function getAuthHeaders(): Promise<HeadersInit> {
@@ -51,7 +59,7 @@ async function handleResponse<T>(
   return response.json() as Promise<T>
 }
 
-// GET — Listar jogos (público)
+// GET — Listar jogos
 export async function getGames(): Promise<Game[]> {
   const response = await fetch(API_URL)
 
@@ -61,7 +69,7 @@ export async function getGames(): Promise<Game[]> {
   )
 }
 
-// GET — Buscar jogo por ID (público)
+// GET — Buscar jogo por ID
 export async function getGameById(
   id: number
 ): Promise<Game> {
@@ -73,7 +81,7 @@ export async function getGameById(
   )
 }
 
-// POST — Cadastrar jogo (administradora)
+// POST — Cadastrar jogo
 export async function createGame(
   game: CreateGameData
 ): Promise<Game> {
@@ -92,7 +100,7 @@ export async function createGame(
   )
 }
 
-// DELETE — Excluir jogo (administradora)
+// DELETE — Excluir jogo
 export async function deleteGame(
   id: number
 ): Promise<void> {
@@ -112,7 +120,7 @@ export async function deleteGame(
   }
 }
 
-// PUT — Atualizar jogo (administradora)
+// PUT — Atualizar jogo
 export async function updateGame(
   id: number,
   game: CreateGameData
